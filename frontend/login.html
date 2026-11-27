@@ -9,8 +9,8 @@
 
   <!-- Bootstrap 4 core CSS -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Be Vietnam Pro & Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <!-- Leaflet CSS (Thay iframe Google Maps của contact.html) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <!-- Template styles (kế thừa contact_section từ contact.html) -->
@@ -68,6 +68,10 @@
         <!-- Cột phải: Form đăng nhập giả lập lưu sessionStorage -->
         <div class="col-lg-5 col-md-6">
           <div class="form_container px-3">
+            <!-- Thông báo khi bị Route Guard chặn truy cập trái quyền hoặc lỗi đăng nhập -->
+            <div id="guardNoticeBanner" class="alert alert-warning small font-weight-bold mb-3" style="display:none;"></div>
+            <div id="loginErrorBanner" class="alert alert-danger small font-weight-bold mb-3" style="display:none;"></div>
+
             <!-- Nút đăng nhập nhanh 1 chạm cho 3 vai trò -->
             <div class="mb-3 p-3 rounded" style="background: rgba(255,255,255,0.12);">
               <div class="small font-weight-bold text-warning mb-2">⚡ ĐĂNG NHẬP NHANH (DEMO 1 CHẠM):</div>
@@ -76,7 +80,7 @@
                   🎓 Khách thuê
                 </button>
                 <button type="button" class="btn btn-sm btn-warning font-weight-bold text-dark m-0" onclick="quickDemoLogin('landlord')">
-                  🏠 Chủ trọ (Đăng tin)
+                  🏠 Chủ trọ (Quản lý)
                 </button>
                 <button type="button" class="btn btn-sm btn-danger font-weight-bold m-0" onclick="quickDemoLogin('admin')">
                   🛡️ Admin (Hậu kiểm)
@@ -94,13 +98,13 @@
               <div class="mt-3">
                 <label class="small font-weight-bold text-warning">Chọn vai trò đăng nhập:</label>
                 <select id="loginRole" class="form-control">
-                  <option value="tenant">🎓 Khách thuê / Sinh viên (Chuyển tới Tìm phòng)</option>
-                  <option value="landlord">🏠 Chủ trọ (Chuyển tới Đăng tin & Kiểm duyệt)</option>
-                  <option value="admin">🛡️ Quản trị viên (Chuyển tới Admin Hậu kiểm & eKYC)</option>
+                  <option value="tenant">🎓 Khách thuê / Sinh viên (Lịch hẹn & Đánh giá)</option>
+                  <option value="landlord">🏠 Chủ trọ (Quản lý phòng, Lịch hẹn & Đăng tin)</option>
+                  <option value="admin">🛡️ Quản trị viên (Admin Hậu kiểm, Báo cáo & eKYC)</option>
                 </select>
               </div>
               <div class="d-flex justify-content-between align-items-center mt-4">
-                <a href="register.html" class="text-warning font-weight-bold small">Chưa có tài khoản? Đăng ký ngay →</a>
+                <a href="register.html" id="linkToRegister" class="text-warning font-weight-bold small">Chưa có tài khoản? Đăng ký ngay →</a>
                 <button type="submit" class="mt-0">Đăng nhập</button>
               </div>
             </form>
@@ -128,20 +132,62 @@
     document.addEventListener("DOMContentLoaded", function () {
       window.SmartTroMap.initAuthMap("authMap");
 
+      var params = new URLSearchParams(window.location.search);
+      var requiredRole = params.get("required");
+      var nextUrl = params.get("next");
+
+      if (requiredRole) {
+        var roleNames = {
+          tenant: "Khách thuê / Sinh viên",
+          landlord: "Chủ trọ",
+          admin: "Quản trị viên (Admin)"
+        };
+        var guardBanner = document.getElementById("guardNoticeBanner");
+        guardBanner.style.display = "block";
+        guardBanner.innerHTML =
+          "🔒 Khu vực bạn vừa mở yêu cầu quyền <strong>" +
+          (roleNames[requiredRole] || requiredRole) +
+          "</strong>. Vui lòng đăng nhập đúng vai trò để tiếp tục!";
+        var roleSelect = document.getElementById("loginRole");
+        if (roleSelect) roleSelect.value = requiredRole;
+      }
+
+      if (nextUrl) {
+        var regLink = document.getElementById("linkToRegister");
+        if (regLink) regLink.href = "register.html?next=" + encodeURIComponent(nextUrl);
+      }
+
       document.getElementById("loginForm").addEventListener("submit", function (e) {
         e.preventDefault();
+        var errBanner = document.getElementById("loginErrorBanner");
+        errBanner.style.display = "none";
+
         var email = document.getElementById("loginEmail").value;
         var pass = document.getElementById("loginPassword").value;
         var role = document.getElementById("loginRole").value;
-        var res = window.SmartTroAuth.login(email, pass, role);
-        window.location.href = res.redirectUrl;
-      });
-    });
+        var targetNext = (!requiredRole || role === requiredRole || role === "admin") ? nextUrl : null;
 
-    window.quickDemoLogin = function (role) {
-      var res = window.SmartTroAuth.login(role + "@trothongminh.vn", "123456", role);
-      window.location.href = res.redirectUrl;
-    };
+        Promise.resolve(window.SmartTroAuth.login(email, pass, role, null, targetNext))
+          .then(function (res) {
+            window.location.href = res.redirectUrl;
+          })
+          .catch(function (err) {
+            errBanner.style.display = "block";
+            errBanner.textContent = "⚠️ " + (err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!");
+          });
+      });
+
+      window.quickDemoLogin = function (role) {
+        var targetNext = (!requiredRole || role === requiredRole || role === "admin") ? nextUrl : null;
+        Promise.resolve(window.SmartTroAuth.login(role + "@trothongminh.vn", "123456", role, null, targetNext))
+          .then(function (res) {
+            window.location.href = res.redirectUrl;
+          })
+          .catch(function (err) {
+            if (window.showToast) window.showToast(err.message || "Lỗi đăng nhập demo");
+          });
+      };
+    });
   </script>
 </body>
 

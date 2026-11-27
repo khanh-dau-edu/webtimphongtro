@@ -28,5 +28,8 @@ desktop.ini
 
 # Private / Uploaded documents & mock sensitive data
 uploads/
+backend/uploads/
+backend/storage/*.db
+backend/storage/*.db-*
 private/
 ekyc-docs/

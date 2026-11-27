@@ -113,19 +113,19 @@
       );
 
       var popupHtml =
-        '<div style="min-width:190px;font-family:Poppins,sans-serif;">' +
+        '<div style="min-width:205px;font-family:\'Be Vietnam Pro\',sans-serif;padding:2px;">' +
         '  <img src="' +
         window.SmartTroAPI.resolveAsset(room.image) +
-        '" style="width:100%;height:95px;object-fit:cover;border-radius:6px;margin-bottom:6px;">' +
-        '  <div style="font-weight:700;color:#0f2480;font-size:13px;margin-bottom:4px;">' +
+        '" style="width:100%;height:105px;object-fit:cover;border-radius:10px;margin-bottom:8px;">' +
+        '  <div style="font-weight:700;color:#0f172a;font-size:13.5px;margin-bottom:4px;">' +
         room.title +
         "</div>" +
-        '  <div style="font-size:12px;color:#d95f08;font-weight:700;">' +
+        '  <div style="font-size:12.5px;color:#ea580c;font-weight:800;">' +
         window.SmartTroAPI.formatCurrency(room.price) +
         "/tháng • " +
         room.area +
         "m²</div>" +
-        '  <div style="font-size:11.5px;color:#374151;margin:4px 0;">📍 Cách ' +
+        '  <div style="font-size:12px;color:#475569;margin:5px 0;">📍 Cách ' +
         (room.refUniName || "trường") +
         ": <strong>" +
         room.distanceKm +
@@ -134,7 +134,7 @@
         basePath +
         "room-detail.html?id=" +
         room.id +
-        '" style="display:block;text-align:center;background:#3554d1;color:#fff;padding:4px 8px;border-radius:5px;font-size:12px;font-weight:600;margin-top:6px;">Xem phòng</a>' +
+        '" style="display:block;text-align:center;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;padding:6px 10px;border-radius:8px;font-size:12.5px;font-weight:700;margin-top:8px;">Xem chi tiết →</a>' +
         "</div>";
 
       var m = L.marker([room.lat, room.lng], { icon: markerIcon }).bindPopup(

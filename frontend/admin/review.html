@@ -5,13 +5,12 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <title>Admin Hậu Kiểm Tin Gắn Cờ & Duyệt eKYC - Trọ Thông Minh</title>
+  <title>Admin Hậu Kiểm Tin Gắn Cờ, Báo Cáo & Duyệt eKYC - Trọ Thông Minh</title>
 
   <!-- Bootstrap 4 core CSS -->
   <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap"
-    rel="stylesheet">
+  <!-- Google Fonts: Be Vietnam Pro & Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <!-- Template styles -->
   <link href="../css/style.css" rel="stylesheet" />
   <link href="../css/responsive.css" rel="stylesheet" />
@@ -46,7 +45,7 @@
     </header>
   </div>
 
-  <!-- Nội dung Admin Hậu Kiểm & Duyệt eKYC -->
+  <!-- Nội dung Admin Hậu Kiểm, Báo Cáo Vi Phạm & Duyệt eKYC -->
   <section class="layout_padding2">
     <div class="container">
       <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 10px;">
@@ -58,37 +57,48 @@
         </button>
       </div>
 
-      <!-- Thẻ thống kê nhanh -->
+      <!-- 4 Thẻ thống kê nhanh -->
       <div class="row mb-3">
-        <div class="col-md-4 col-6 mb-2">
-          <div class="card border-0 shadow-sm p-3 bg-white">
+        <div class="col-lg-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
             <div class="small text-muted font-weight-bold">🚩 TIN ĐANG BỊ GẮN CỜ</div>
             <div class="h3 font-weight-bold text-danger mb-0" id="statFlaggedCount">0</div>
           </div>
         </div>
-        <div class="col-md-4 col-6 mb-2">
-          <div class="card border-0 shadow-sm p-3 bg-white">
+        <div class="col-lg-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">📢 BÁO CÁO TỪ SINH VIÊN</div>
+            <div class="h3 font-weight-bold text-warning mb-0" id="statReportCount">0</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
             <div class="small text-muted font-weight-bold">🪪 HỒ SƠ eKYC CHỜ DUYỆT</div>
             <div class="h3 font-weight-bold text-primary mb-0" id="statEkycCount">0</div>
           </div>
         </div>
-        <div class="col-md-4 col-12 mb-2">
-          <div class="card border-0 shadow-sm p-3 bg-white">
+        <div class="col-lg-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
             <div class="small text-muted font-weight-bold">✅ ĐÃ XỬ LÝ TRONG PHIÊN</div>
             <div class="h3 font-weight-bold text-success mb-0" id="statProcessedCount">0</div>
           </div>
         </div>
       </div>
 
-      <!-- 2 Tab: Tin bị gắn cờ & Hồ sơ eKYC -->
+      <!-- 3 Tab: Tin bị gắn cờ, Báo cáo từ sinh viên & Hồ sơ eKYC -->
       <ul class="nav nav-pills mb-3" id="adminReviewTabs" role="tablist">
-        <li class="nav-item mr-2">
+        <li class="nav-item mr-2 mb-2">
           <a class="nav-link active font-weight-bold" id="tab-flagged-btn" data-toggle="pill" href="#tabFlagged"
             role="tab">
-            🚩 Tin Đăng Bị Gắn Cờ (Ảnh trùng / Lệch giá / Từ khóa)
+            🚩 Tin Đăng Bị Gắn Cờ Tự Động
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item mr-2 mb-2">
+          <a class="nav-link font-weight-bold" id="tab-reports-btn" data-toggle="pill" href="#tabReports" role="tab">
+            📢 Báo Cáo Vi Phạm Từ Sinh Viên <span class="badge badge-light ml-1" id="badgeTabReports">0</span>
+          </a>
+        </li>
+        <li class="nav-item mb-2">
           <a class="nav-link font-weight-bold" id="tab-ekyc-btn" data-toggle="pill" href="#tabEkyc" role="tab">
             🪪 Duyệt Hồ Sơ eKYC Chủ Trọ
           </a>
@@ -101,7 +111,12 @@
           <div id="flaggedListContainer"></div>
         </div>
 
-        <!-- TAB 2: Duyệt hồ sơ eKYC -->
+        <!-- TAB 2: Báo cáo vi phạm từ sinh viên -->
+        <div class="tab-pane fade" id="tabReports" role="tabpanel">
+          <div id="reportsListContainer"></div>
+        </div>
+
+        <!-- TAB 3: Duyệt hồ sơ eKYC -->
         <div class="tab-pane fade" id="tabEkyc" role="tabpanel">
           <div class="row" id="ekycListContainer"></div>
         </div>
@@ -125,21 +140,41 @@
     document.addEventListener("DOMContentLoaded", function () {
       var fmt = window.SmartTroAPI.formatCurrency;
 
+      // Mở sẵn tab nếu URL có hash hoặc ?tab=reports / ?tab=ekyc
+      var params = new URLSearchParams(window.location.search);
+      var initialTab = params.get("tab");
+      if (initialTab === "reports") {
+        $("#tab-reports-btn").tab("show");
+      } else if (initialTab === "ekyc") {
+        $("#tab-ekyc-btn").tab("show");
+      }
+
       function loadAdminData() {
-        window.SmartTroAPI.getFlaggedData().then(function (data) {
+        Promise.all([
+          window.SmartTroAPI.getFlaggedData(),
+          window.SmartTroAPI.getViolationReports()
+        ]).then(function (res) {
+          var data = res[0];
+          var reports = res[1] || [];
           var flaggedRooms = data.flaggedRooms || [];
           var ekycRequests = data.ekycRequests || [];
 
           var pendingFlags = flaggedRooms.filter(function (f) { return f.status === "FLAGGED"; }).length;
+          var pendingReports = reports.filter(function (r) { return r.status === "PENDING"; }).length;
           var pendingEkyc = ekycRequests.filter(function (e) { return e.status === "PENDING"; }).length;
           var processed =
-            (flaggedRooms.length - pendingFlags) + (ekycRequests.length - pendingEkyc);
+            (flaggedRooms.length - pendingFlags) +
+            (reports.length - pendingReports) +
+            (ekycRequests.length - pendingEkyc);
 
           document.getElementById("statFlaggedCount").textContent = pendingFlags;
+          document.getElementById("statReportCount").textContent = pendingReports;
+          document.getElementById("badgeTabReports").textContent = pendingReports;
           document.getElementById("statEkycCount").textContent = pendingEkyc;
           document.getElementById("statProcessedCount").textContent = processed;
 
           renderFlaggedRooms(flaggedRooms);
+          renderViolationReports(reports);
           renderEkycRequests(ekycRequests);
         });
       }
@@ -206,6 +241,55 @@
         }).join("");
       }
 
+      function renderViolationReports(reports) {
+        var container = document.getElementById("reportsListContainer");
+        if (!reports.length) {
+          container.innerHTML = '<div class="alert alert-success">Hiện chưa có báo cáo vi phạm nào từ người dùng.</div>';
+          return;
+        }
+
+        container.innerHTML = reports.map(function (rp) {
+          var isPending = rp.status === "PENDING";
+          var statusHtml = "";
+          if (rp.status === "RESOLVED") {
+            statusHtml = '<span class="badge badge-danger p-2">🛑 Đã xác nhận vi phạm & Khóa phòng #' + rp.roomId + '</span>';
+          } else if (rp.status === "DISMISSED") {
+            statusHtml = '<span class="badge badge-secondary p-2">✓ Đã bác bỏ báo cáo (Giữ phòng ACTIVE)</span>';
+          } else {
+            statusHtml = '<span class="badge badge-warning text-dark p-2">⏳ Chờ xác minh thực tế</span>';
+          }
+
+          return (
+            '<div class="card border-0 shadow-sm mb-3 p-3">' +
+            '  <div class="row align-items-center">' +
+            '    <div class="col-md-8">' +
+            '      <div class="d-flex justify-content-between align-items-center flex-wrap mb-1" style="gap:6px;">' +
+            '        <span class="small font-weight-bold text-muted">Mã báo cáo: #' + rp.id + ' • Gửi lúc: ' + (rp.createdAt || "") + '</span>' +
+            statusHtml +
+            '      </div>' +
+            '      <h5 class="font-weight-bold text-primary mb-1">' +
+            '        Phòng bị phản ánh: <a href="../room-detail.html?id=' + rp.roomId + '" class="text-primary">#' + rp.roomId + ' - ' + (rp.roomTitle || "Phòng trọ") + ' ↗</a>' +
+            '      </h5>' +
+            '      <div class="mb-2">' +
+            '        <span class="flag-reason-badge">📢 Lý do: ' + rp.reason + '</span>' +
+            '        <span class="metric-pill">👤 Người báo cáo: ' + (rp.reporterName || "Sinh viên") + ' (' + (rp.reporterPhone || "Ẩn SĐT") + ')</span>' +
+            '      </div>' +
+            '      <div class="p-2 rounded bg-light small text-dark border-left border-danger" style="border-left-width: 4px !important;">' +
+            '        <strong>Nội dung phản ánh:</strong> "' + (rp.detail || "") + '"' +
+            '      </div>' +
+            '    </div>' +
+            '    <div class="col-md-4 text-md-right mt-3 mt-md-0">' +
+            (isPending
+              ? '<button type="button" class="btn btn-danger btn-sm btn-block font-weight-bold mb-2" onclick="handleReportAction(\'' + rp.id + '\', \'RESOLVED\')">🛑 Đình chỉ tin đăng vi phạm</button>' +
+                '<button type="button" class="btn btn-outline-success btn-sm btn-block font-weight-bold" onclick="handleReportAction(\'' + rp.id + '\', \'DISMISSED\')">✓ Bác bỏ báo cáo (Tin hợp lệ)</button>'
+              : '<button type="button" class="btn btn-outline-secondary btn-sm btn-block" onclick="handleReportAction(\'' + rp.id + '\', \'PENDING\')">Hoàn tác (Mở lại phòng & chờ duyệt)</button>') +
+            '    </div>' +
+            '  </div>' +
+            '</div>'
+          );
+        }).join("");
+      }
+
       function renderEkycRequests(list) {
         var container = document.getElementById("ekycListContainer");
         container.innerHTML = list.map(function (req) {
@@ -263,6 +347,21 @@
         });
       };
 
+      window.handleReportAction = function (id, newStatus) {
+        window.SmartTroAPI.updateReportStatus(id, newStatus).then(function (rp) {
+          loadAdminData();
+          if (window.showToast) {
+            if (newStatus === "RESOLVED") {
+              window.showToast("Đã xác nhận vi phạm #" + id + " và tạm đình chỉ phòng #" + (rp ? rp.roomId : "") + "!");
+            } else if (newStatus === "DISMISSED") {
+              window.showToast("Đã bác bỏ báo cáo #" + id + ".");
+            } else {
+              window.showToast("Đã hoàn tác báo cáo #" + id + " và khôi phục hiển thị phòng.");
+            }
+          }
+        });
+      };
+
       window.handleEkycAction = function (id, newStatus) {
         window.SmartTroAPI.updateEkycStatus(id, newStatus).then(function () {
           loadAdminData();
@@ -277,9 +376,10 @@
       };
 
       document.getElementById("btnResetDemoFlagged").addEventListener("click", function () {
-        localStorage.removeItem("smarttro_flagged_state");
-        loadAdminData();
-        if (window.showToast) window.showToast("Đã khôi phục dữ liệu hậu kiểm mẫu!");
+        window.SmartTroAPI.resetAdminDemoData().then(function () {
+          loadAdminData();
+          if (window.showToast) window.showToast("Đã khôi phục toàn bộ dữ liệu hậu kiểm & báo cáo mẫu!");
+        });
       });
 
       loadAdminData();

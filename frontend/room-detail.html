@@ -9,8 +9,8 @@
 
   <!-- Bootstrap 4 core CSS -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Be Vietnam Pro & Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <!-- Template styles -->
@@ -80,7 +80,7 @@
               </div>
               <div class="text-right">
                 <div id="detailPrice" class="h4 font-weight-bold text-danger mb-0">0 đ/tháng</div>
-                <span class="badge badge-success">Còn phòng</span>
+                <span id="detailStatusBadge" class="badge badge-success">Còn phòng</span>
               </div>
             </div>
 
@@ -220,6 +220,16 @@
             <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
           </div>
           <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="font-weight-bold small">Họ tên người phản ánh *</label>
+                <input type="text" id="reportSenderName" class="form-control" placeholder="Nguyễn Văn A" required>
+              </div>
+              <div class="form-group col-6">
+                <label class="font-weight-bold small">Số điện thoại liên hệ *</label>
+                <input type="tel" id="reportSenderPhone" class="form-control" placeholder="0905xxxxxx" required>
+              </div>
+            </div>
             <div class="form-group">
               <label class="font-weight-bold small">Lý do báo cáo *</label>
               <select id="reportReason" class="form-control" required>
@@ -303,6 +313,27 @@
           "🛡️ Trust Score: " + (room.trustScore || 90) + "/100";
         document.getElementById("bookingRoomTitle").value =
           room.title + " (" + fmt(room.price) + "/tháng)";
+
+        var statusBadgeEl = document.getElementById("detailStatusBadge");
+        if (room.status === "RENTED") {
+          statusBadgeEl.className = "badge badge-secondary";
+          statusBadgeEl.textContent = "Đã cho thuê";
+        } else if (room.status === "SUSPENDED") {
+          statusBadgeEl.className = "badge badge-danger";
+          statusBadgeEl.textContent = "Đang tạm đình chỉ (Hậu kiểm)";
+        } else {
+          statusBadgeEl.className = "badge badge-success";
+          statusBadgeEl.textContent = "Còn phòng";
+        }
+
+        // Tự động điền thông tin nếu người dùng đã đăng nhập
+        var currentUser = window.SmartTroAuth ? window.SmartTroAuth.getCurrentUser() : null;
+        if (currentUser) {
+          document.getElementById("bookingName").value = currentUser.name || "";
+          document.getElementById("bookingPhone").value = currentUser.phone || "";
+          document.getElementById("reportSenderName").value = currentUser.name || "";
+          document.getElementById("reportSenderPhone").value = currentUser.phone || "";
+        }
 
         document.getElementById("detailVerifiedBadge").innerHTML = room.verified
           ? '<span class="badge-verified">✓ Chủ trọ đã xác thực eKYC</span>'
@@ -402,7 +433,8 @@
             banner.style.display = "block";
             banner.innerHTML =
               "✓ <strong>Đặt lịch thành công!</strong> Mã hẹn: <strong>" + saved.id +
-              "</strong> vào lúc " + saved.time + " ngày " + saved.date + ".";
+              "</strong> vào lúc " + saved.time + " ngày " + saved.date + ". " +
+              '<a href="tenant/my-bookings.html" class="font-weight-bold text-primary ml-1">Quản lý lịch hẹn →</a>';
             if (window.showToast) window.showToast("Đã gửi lịch hẹn xem phòng #" + saved.id);
           });
         });
@@ -413,14 +445,16 @@
           var reportPayload = {
             roomId: room.id,
             roomTitle: room.title,
+            reporterName: document.getElementById("reportSenderName").value,
+            reporterPhone: document.getElementById("reportSenderPhone").value,
             reason: document.getElementById("reportReason").value,
             detail: document.getElementById("reportDetail").value
           };
-          window.SmartTroAPI.createReport(reportPayload).then(function () {
+          window.SmartTroAPI.createReport(reportPayload).then(function (savedRp) {
             $("#reportModal").modal("hide");
             document.getElementById("reportDetail").value = "";
             if (window.showToast) {
-              window.showToast("Đã ghi nhận báo cáo vi phạm và chuyển sang Admin hậu kiểm!");
+              window.showToast("Đã gửi báo cáo #" + savedRp.id + " sang Trung tâm Admin hậu kiểm!");
             }
           });
         });
