@@ -21,6 +21,7 @@ npm start
 Sau khi chạy, mở trình duyệt tại: **http://localhost:3000**
 
 - Hệ thống sẽ tự động tạo file cơ sở dữ liệu `backend/storage/smarttro.db` và nạp dữ liệu mẫu (6 trường ĐH Đà Nẵng, 14 phòng đang hoạt động, 3 phòng bị gắn cờ, lịch hẹn, đánh giá và hồ sơ eKYC).
+- **Tài liệu & Test CRUD API trên Swagger UI:** **http://localhost:3000/api-docs** *(Xem hướng dẫn chi tiết từng bước tại [SWAGGER_API_GUIDE.md](SWAGGER_API_GUIDE.md))*.
 - Để khôi phục lại toàn bộ dữ liệu gốc về ban đầu:
   ```bash
   cd backend

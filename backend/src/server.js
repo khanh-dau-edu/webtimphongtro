@@ -34,6 +34,12 @@ function createApp() {
     swaggerUi.setup(openApiSpec, {
       explorer: true,
       customSiteTitle: "Swagger CRUD API - Trọ Thông Minh Đà Nẵng",
+      customCss: `
+        .swagger-ui .topbar { background: linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%); padding: 12px 0; }
+        .swagger-ui .info .title { font-family: system-ui, -apple-system, sans-serif; color: #0f172a; font-weight: 800; }
+        .swagger-ui .opblock { border-radius: 12px; box-shadow: 0 4px 14px rgba(15,23,42,0.05); overflow: hidden; }
+        .swagger-ui .btn.authorize { border-radius: 999px; font-weight: 700; }
+      `,
       swaggerOptions: {
         persistAuthorization: true,
         docExpansion: "list",
