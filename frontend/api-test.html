@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>HTTP REST API Playground - Trọ Thông Minh Đà Nẵng</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
+  <link href="css/custom.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f7fe;
+      color: #111827;
+    }
+    .api-topbar {
+      background: linear-gradient(90deg, #0f2480 0%, #1e3a8a 100%);
+      color: #fff;
+      padding: 14px 24px;
+      box-shadow: 0 3px 12px rgba(15, 36, 128, 0.2);
+    }
+    .endpoint-item {
+      cursor: pointer;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      margin-bottom: 7px;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .endpoint-item:hover, .endpoint-item.active {
+      border-color: #3554d1;
+      background: #eef2ff;
+      transform: translateX(2px);
+    }
+    .method-tag {
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      min-width: 52px;
+      text-align: center;
+      color: #fff;
+    }
+    .m-GET { background: #2563eb; }
+    .m-POST { background: #16a34a; }
+    .m-PATCH { background: #d97706; }
+    .code-editor {
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 13px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      padding: 12px;
+      width: 100%;
+    }
+    pre.response-box {
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 13px;
+      background: #0f172a;
+      color: #38bdf8;
+      border-radius: 8px;
+      padding: 16px;
+      max-height: 480px;
+      overflow: auto;
+      margin-bottom: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .db-counter-pill {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Thanh Header API Tester -->
+  <div class="api-topbar">
+    <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap" style="gap: 12px;">
+      <div class="d-flex align-items-center" style="gap: 14px;">
+        <a href="index.html">
+          <img src="images/logo-vi.svg" alt="Logo" style="width: 170px;">
+        </a>
+        <div>
+          <h5 class="mb-0 font-weight-bold">⚡ HTTP REST API Playground (Swagger / Postman Mini)</h5>
+          <small class="text-warning font-weight-bold" id="serverEngineStatus">Đang kết nối tới SQLite Server...</small>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+        <span class="db-counter-pill" id="liveDbCounts">Đang tải bộ đếm CSDL...</span>
+        <a href="index.html" class="btn btn-sm btn-warning font-weight-bold text-dark">🏠 Mở Giao diện Web</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid py-4 px-lg-4">
+    <!-- Thanh lấy nhanh JWT Bearer Token -->
+    <div class="card border-0 shadow-sm p-3 mb-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+          <span class="small font-weight-bold text-primary">🔑 CẤP NHANH JWT TOKEN ĐỂ TEST QUYỀN:</span>
+          <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" onclick="quickGetJwt('tenant')">
+            🎓 Token Sinh viên
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-warning text-dark font-weight-bold" onclick="quickGetJwt('landlord')">
+            🏠 Token Chủ trọ
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-danger font-weight-bold" onclick="quickGetJwt('admin')">
+            🛡️ Token Admin
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearJwt()">
+            ✕ Xóa Token
+          </button>
+        </div>
+        <div class="small">
+          <strong>Trạng thái Auth:</strong>
+          <span id="jwtStatusBadge" class="badge badge-secondary p-2">Chưa gắn Bearer Token (Guest)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Cột trái: Danh sách Endpoints mẫu -->
+      <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm p-3">
+          <h6 class="font-weight-bold text-primary border-bottom pb-2 mb-3">
+            📚 Danh Sách REST API (Nhấn để nạp mẫu)
+          </h6>
+          <div id="presetEndpointsList" style="max-height: 540px; overflow-y: auto; padding-right: 4px;"></div>
+
+          <!-- Khung test riêng cho Multipart Upload ảnh -->
+          <div class="border-top pt-3 mt-2">
+            <h6 class="font-weight-bold text-success small mb-2">📷 Test Upload Ảnh Thật (`POST /api/upload`)</h6>
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <input type="file" id="testUploadFile" accept="image/*" class="small flex-fill">
+              <button type="button" id="btnTestUpload" class="btn btn-sm btn-success font-weight-bold">Upload</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cột phải: Bộ gửi HTTP Request & Kết quả JSON -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-3 mb-3">
+          <h6 class="font-weight-bold text-primary mb-2">🚀 Gửi HTTP Request Trực Tiếp</h6>
+          <form id="apiRunnerForm">
+            <div class="form-row mb-2">
+              <div class="col-md-2 col-4 mb-2 mb-md-0">
+                <select id="reqMethod" class="form-control font-weight-bold">
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PATCH">PATCH</option>
+                </select>
+              </div>
+              <div class="col-md-8 col-8 mb-2 mb-md-0">
+                <input type="text" id="reqUrl" class="form-control font-weight-bold" value="/api/health" required>
+              </div>
+              <div class="col-md-2 col-12">
+                <button type="submit" class="btn btn-primary btn-block font-weight-bold">Gửi (Send)</button>
+              </div>
+            </div>
+
+            <div id="reqBodyGroup" style="display:none;">
+              <label class="small font-weight-bold text-muted mb-1">Request JSON Body:</label>
+              <textarea id="reqBody" rows="6" class="code-editor"></textarea>
+            </div>
+          </form>
+        </div>
+
+        <!-- Khung hiển thị Response -->
+        <div class="card border-0 shadow-sm p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap" style="gap: 8px;">
+            <h6 class="font-weight-bold text-primary mb-0">📥 Phản Hồi Từ Server (HTTP Response)</h6>
+            <div class="d-flex align-items-center" style="gap: 10px;">
+              <span id="resStatusBadge" class="badge badge-secondary p-2">Chưa gửi</span>
+              <span id="resTimeBadge" class="small font-weight-bold text-muted">0 ms</span>
+            </div>
+          </div>
+          <pre id="resJsonViewer" class="response-box">// Nhấn nút "Gửi (Send)" hoặc chọn 1 API bên cột trái để xem dữ liệu JSON thực tế từ SQLite...</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var currentToken = sessionStorage.getItem("smarttro_jwt_token") || "";
+      var currentUser = null;
+      try {
+        currentUser = JSON.parse(sessionStorage.getItem("smarttro_user"));
+      } catch (e) {}
+
+      var PRESETS = [
+        {
+          method: "GET",
+          url: "/api/health",
+          label: "Kiểm tra sức khỏe Server & Số bản ghi SQLite"
+        },
+        {
+          method: "GET",
+          url: "/api/universities",
+          label: "Lấy danh sách 6 trường ĐH Đà Nẵng"
+        },
+        {
+          method: "GET",
+          url: "/api/rooms?mode=radius&uniId=uni-bk&radius=2&verifiedOnly=true",
+          label: "Tìm phòng Haversine ≤ 2km quanh ĐH Bách Khoa"
+        },
+        {
+          method: "GET",
+          url: "/api/rooms/1",
+          label: "Xem chi tiết Phòng #1 & Khoảng cách"
+        },
+        {
+          method: "POST",
+          url: "/api/auth/login",
+          label: "Đăng nhập lấy JWT Token (Sinh viên)",
+          body: {
+            email: "sinhvien@dut.udn.vn",
+            password: "123456",
+            role: "tenant"
+          }
+        },
+        {
+          method: "GET",
+          url: "/api/auth/me",
+          label: "Kiểm tra thông tin User từ JWT Token"
+        },
+        {
+          method: "POST",
+          url: "/api/rooms",
+          label: "Đăng phòng Hợp lệ (Duyệt ACTIVE ngay)",
+          body: {
+            title: "Studio Mới Xây Gần ĐH Bách Khoa",
+            address: "105 Nguyễn Lương Bằng, Liên Chiểu",
+            district: "Liên Chiểu",
+            price: 2600000,
+            area: 25,
+            type: "Căn hộ mini",
+            lat: 16.0742,
+            lng: 108.1495,
+            electricity: 3500,
+            water: 15000,
+            wifi: 50000,
+            trash: 20000,
+            parking: 0,
+            image: "images/s-2.jpg",
+            imageMode: "ORIGINAL",
+            amenities: ["Điều hòa", "Nóng lạnh", "Khóa vân tay"]
+          }
+        },
+        {
+          method: "POST",
+          url: "/api/rooms",
+          label: "Đăng phòng Vi phạm (Bị chặn FLAGGED)",
+          body: {
+            title: "Phòng Giá Sốc Cọc Giữ Chỗ Gấp",
+            address: "12 Nguyễn Lương Bằng, Liên Chiểu",
+            district: "Liên Chiểu",
+            price: 900000,
+            area: 30,
+            type: "Phòng trọ",
+            electricity: 5500,
+            water: 30000,
+            image: "images/d-1.jpg",
+            imageMode: "DUPLICATE"
+          }
+        },
+        {
+          method: "GET",
+          url: "/api/bookings",
+          label: "Danh sách tất cả lịch hẹn xem phòng"
+        },
+        {
+          method: "POST",
+          url: "/api/bookings",
+          label: "Đặt lịch hẹn xem phòng #1",
+          body: {
+            roomId: 1,
+            roomTitle: "Studio Cửa Sổ Lớn Hòa Khánh",
+            tenantName: "Nguyễn Minh Quân",
+            phone: "0905111222",
+            date: "2026-11-30",
+            time: "09:00",
+            note: "Test đặt lịch qua REST API"
+          }
+        },
+        {
+          method: "GET",
+          url: "/api/reviews?roomId=1",
+          label: "Xem danh sách đánh giá thực tế của Phòng #1"
+        },
+        {
+          method: "POST",
+          url: "/api/reviews",
+          label: "Gửi đánh giá cho lịch hẹn Đã hoàn thành (#BK-1003)",
+          body: {
+            bookingId: "BK-1003",
+            roomId: 2,
+            userName: "Lê Hoàng Long (SV Bách Khoa)",
+            rating: 5,
+            comment: "Test REST API: Phòng thoáng mát, đồng hồ điện riêng!"
+          }
+        },
+        {
+          method: "GET",
+          url: "/api/reports",
+          label: "Danh sách báo cáo vi phạm từ sinh viên"
+        },
+        {
+          method: "POST",
+          url: "/api/reports",
+          label: "Gửi báo cáo vi phạm mới cho Phòng #5",
+          body: {
+            roomId: 5,
+            roomTitle: "Phòng Trọ Giá Rẻ Châu Thị Vĩnh Tế",
+            reporterName: "Sinh viên Test API",
+            reporterPhone: "0905999888",
+            reason: "Đơn giá điện/nước thực tế cao hơn tin đăng",
+            detail: "Chủ trọ báo điện 5.200đ/kWh khi đến xem."
+          }
+        },
+        {
+          method: "GET",
+          url: "/api/admin/moderation",
+          label: "Tổng hợp dữ liệu Admin (Flagged + Reports + eKYC)"
+        },
+        {
+          method: "POST",
+          url: "/api/admin/reset-demo-public",
+          label: "Khôi phục toàn bộ CSDL SQLite về mặc định",
+          body: {}
+        }
+      ];
+
+      var methodEl = document.getElementById("reqMethod");
+      var urlEl = document.getElementById("reqUrl");
+      var bodyGroupEl = document.getElementById("reqBodyGroup");
+      var bodyEl = document.getElementById("reqBody");
+      var viewerEl = document.getElementById("resJsonViewer");
+      var statusBadgeEl = document.getElementById("resStatusBadge");
+      var timeBadgeEl = document.getElementById("resTimeBadge");
+
+      function updateJwtBadge() {
+        var el = document.getElementById("jwtStatusBadge");
+        if (currentToken && currentUser) {
+          el.className = "badge badge-success p-2";
+          el.textContent = "✓ Đã gắn Bearer Token: " + currentUser.name + " (" + currentUser.role + ")";
+        } else if (currentToken) {
+          el.className = "badge badge-success p-2";
+          el.textContent = "✓ Đã gắn JWT Bearer Token";
+        } else {
+          el.className = "badge badge-secondary p-2";
+          el.textContent = "Chưa gắn Bearer Token (Guest)";
+        }
+      }
+
+      function refreshHealthCounts() {
+        fetch("/api/health")
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            document.getElementById("serverEngineStatus").textContent = "🟢 Online: " + d.engine;
+            var c = d.counts || {};
+            document.getElementById("liveDbCounts").textContent =
+              "Phòng ACTIVE: " + c.activeRooms +
+              " | Trường ĐH: " + c.universities +
+              " | Lịch hẹn: " + c.bookings +
+              " | Đánh giá: " + c.reviews +
+              " | Báo cáo: " + c.violationReports +
+              " | eKYC: " + c.ekycRequests;
+          })
+          .catch(function () {
+            document.getElementById("serverEngineStatus").textContent = "🔴 Không kết nối được Server Express";
+          });
+      }
+
+      function toggleBodyVisibility() {
+        bodyGroupEl.style.display = methodEl.value === "GET" ? "none" : "block";
+      }
+
+      methodEl.addEventListener("change", toggleBodyVisibility);
+
+      // Render danh sách Presets
+      var listContainer = document.getElementById("presetEndpointsList");
+      listContainer.innerHTML = PRESETS.map(function (p, idx) {
+        return (
+          '<div class="endpoint-item" data-idx="' + idx + '">' +
+          '  <span class="method-tag m-' + p.method + '">' + p.method + '</span>' +
+          '  <div style="overflow:hidden;">' +
+          '    <div class="font-weight-bold text-dark text-truncate">' + p.label + '</div>' +
+          '    <small class="text-muted text-truncate d-block">' + p.url + '</small>' +
+          '  </div>' +
+          '</div>'
+        );
+      }).join("");
+
+      listContainer.querySelectorAll(".endpoint-item").forEach(function (el) {
+        el.addEventListener("click", function () {
+          listContainer.querySelectorAll(".endpoint-item").forEach(function (x) { x.classList.remove("active"); });
+          el.classList.add("active");
+          var p = PRESETS[Number(el.getAttribute("data-idx"))];
+          methodEl.value = p.method;
+          urlEl.value = p.url;
+          bodyEl.value = p.body ? JSON.stringify(p.body, null, 2) : "{\n}";
+          toggleBodyVisibility();
+          executeCurrentRequest();
+        });
+      });
+
+      function executeCurrentRequest() {
+        var method = methodEl.value;
+        var url = urlEl.value.trim();
+        var headers = {};
+        if (currentToken) {
+          headers["Authorization"] = "Bearer " + currentToken;
+        }
+
+        var opts = { method: method, headers: headers };
+        if (method !== "GET" && bodyEl.value.trim()) {
+          try {
+            JSON.parse(bodyEl.value);
+            headers["Content-Type"] = "application/json";
+            opts.body = bodyEl.value;
+          } catch (err) {
+            statusBadgeEl.className = "badge badge-danger p-2";
+            statusBadgeEl.textContent = "Lỗi cú pháp JSON Body";
+            viewerEl.textContent = "Body không đúng chuẩn JSON:\n" + err.message;
+            return;
+          }
+        }
+
+        viewerEl.textContent = "Đang gửi " + method + " " + url + " ...";
+        var t0 = performance.now();
+
+        fetch(url, opts)
+          .then(function (res) {
+            var elapsed = Math.round(performance.now() - t0);
+            timeBadgeEl.textContent = elapsed + " ms";
+            statusBadgeEl.className = "badge p-2 " + (res.ok ? "badge-success" : "badge-danger");
+            statusBadgeEl.textContent = "HTTP " + res.status + " " + res.statusText;
+            return res.json().catch(function () { return {}; });
+          })
+          .then(function (data) {
+            if (data && data.token && data.user) {
+              currentToken = data.token;
+              currentUser = data.user;
+              sessionStorage.setItem("smarttro_jwt_token", currentToken);
+              sessionStorage.setItem("smarttro_user", JSON.stringify(currentUser));
+              updateJwtBadge();
+            }
+            viewerEl.textContent = JSON.stringify(data, null, 2);
+            refreshHealthCounts();
+          })
+          .catch(function (err) {
+            statusBadgeEl.className = "badge badge-danger p-2";
+            statusBadgeEl.textContent = "Network Error";
+            viewerEl.textContent = err.message;
+          });
+      }
+
+      document.getElementById("apiRunnerForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        executeCurrentRequest();
+      });
+
+      window.quickGetJwt = function (role) {
+        fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: role + "@trothongminh.vn", password: "123456", role: role })
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            currentToken = data.token;
+            currentUser = data.user;
+            sessionStorage.setItem("smarttro_jwt_token", currentToken);
+            sessionStorage.setItem("smarttro_user", JSON.stringify(currentUser));
+            updateJwtBadge();
+            viewerEl.textContent = JSON.stringify(data, null, 2);
+            statusBadgeEl.className = "badge badge-success p-2";
+            statusBadgeEl.textContent = "HTTP 200 (Đã cấp Token " + role + ")";
+          });
+      };
+
+      window.clearJwt = function () {
+        currentToken = "";
+        currentUser = null;
+        sessionStorage.removeItem("smarttro_jwt_token");
+        sessionStorage.removeItem("smarttro_user");
+        updateJwtBadge();
+      };
+
+      // Xử lý Upload ảnh thật qua POST /api/upload
+      document.getElementById("btnTestUpload").addEventListener("click", function () {
+        var fInput = document.getElementById("testUploadFile");
+        var file = fInput.files && fInput.files[0];
+        if (!file) {
+          alert("Vui lòng chọn 1 tệp ảnh từ máy tính trước khi bấm Upload!");
+          return;
+        }
+        var fd = new FormData();
+        fd.append("image", file);
+        var t0 = performance.now();
+        fetch("/api/upload", {
+          method: "POST",
+          headers: currentToken ? { Authorization: "Bearer " + currentToken } : {},
+          body: fd
+        })
+          .then(function (res) {
+            timeBadgeEl.textContent = Math.round(performance.now() - t0) + " ms";
+            statusBadgeEl.className = "badge p-2 " + (res.ok ? "badge-success" : "badge-danger");
+            statusBadgeEl.textContent = "HTTP " + res.status;
+            return res.json();
+          })
+          .then(function (data) {
+            viewerEl.textContent = JSON.stringify(data, null, 2);
+          });
+      });
+
+      updateJwtBadge();
+      refreshHealthCounts();
+      executeCurrentRequest();
+    })();
+  </script>
+</body>
+
+</html>
