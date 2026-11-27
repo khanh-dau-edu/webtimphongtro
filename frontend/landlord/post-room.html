@@ -251,6 +251,7 @@
 
       var uploadedDataUrl = null;
       var uploadedFileName = null;
+      var uploadedRawFile = null;
 
       var fileInput = document.getElementById("postImageFile");
       fileInput.addEventListener("change", function () {
@@ -258,9 +259,11 @@
         if (!file) {
           uploadedDataUrl = null;
           uploadedFileName = null;
+          uploadedRawFile = null;
           document.getElementById("uploadPreviewWrap").style.display = "none";
           return;
         }
+        uploadedRawFile = file;
         var reader = new FileReader();
         reader.onload = function (ev) {
           uploadedDataUrl = ev.target.result;
@@ -278,6 +281,7 @@
       document.getElementById("btnPresetValid").addEventListener("click", function () {
         uploadedDataUrl = null;
         uploadedFileName = null;
+        uploadedRawFile = null;
         fileInput.value = "";
         document.getElementById("uploadPreviewWrap").style.display = "none";
         document.getElementById("postTitle").value = "Phòng Studio Cửa Sổ Thoáng Hòa Khánh";
@@ -295,6 +299,7 @@
       document.getElementById("btnPresetFlagged").addEventListener("click", function () {
         uploadedDataUrl = null;
         uploadedFileName = null;
+        uploadedRawFile = null;
         fileInput.value = "";
         document.getElementById("uploadPreviewWrap").style.display = "none";
         document.getElementById("postTitle").value = "Phòng Giá Sốc Cọc Giữ Chỗ Gấp";
@@ -342,8 +347,18 @@
           amenities: ams
         };
 
-        var result = window.SmartTroAPI.simulateModeration(formData);
-        renderModerationResult(result);
+        var uploadPromise = uploadedRawFile
+          ? window.SmartTroAPI.uploadRoomImage(uploadedRawFile)
+              .then(function (upRes) { return upRes.url; })
+              .catch(function () { return uploadedDataUrl; })
+          : Promise.resolve(uploadedDataUrl || document.getElementById("postImage").value);
+
+        uploadPromise.then(function (finalImageUrl) {
+          formData.image = finalImageUrl;
+          return Promise.resolve(window.SmartTroAPI.createRoom(formData));
+        }).then(function (result) {
+          renderModerationResult(result);
+        });
       }
 
       function renderStepRow(title, checkObj) {

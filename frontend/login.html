@@ -68,8 +68,9 @@
         <!-- Cột phải: Form đăng nhập giả lập lưu sessionStorage -->
         <div class="col-lg-5 col-md-6">
           <div class="form_container px-3">
-            <!-- Thông báo khi bị Route Guard chặn truy cập trái quyền -->
+            <!-- Thông báo khi bị Route Guard chặn truy cập trái quyền hoặc lỗi đăng nhập -->
             <div id="guardNoticeBanner" class="alert alert-warning small font-weight-bold mb-3" style="display:none;"></div>
+            <div id="loginErrorBanner" class="alert alert-danger small font-weight-bold mb-3" style="display:none;"></div>
 
             <!-- Nút đăng nhập nhanh 1 chạm cho 3 vai trò -->
             <div class="mb-3 p-3 rounded" style="background: rgba(255,255,255,0.12);">
@@ -158,18 +159,33 @@
 
       document.getElementById("loginForm").addEventListener("submit", function (e) {
         e.preventDefault();
+        var errBanner = document.getElementById("loginErrorBanner");
+        errBanner.style.display = "none";
+
         var email = document.getElementById("loginEmail").value;
         var pass = document.getElementById("loginPassword").value;
         var role = document.getElementById("loginRole").value;
         var targetNext = (!requiredRole || role === requiredRole || role === "admin") ? nextUrl : null;
-        var res = window.SmartTroAuth.login(email, pass, role, null, targetNext);
-        window.location.href = res.redirectUrl;
+
+        Promise.resolve(window.SmartTroAuth.login(email, pass, role, null, targetNext))
+          .then(function (res) {
+            window.location.href = res.redirectUrl;
+          })
+          .catch(function (err) {
+            errBanner.style.display = "block";
+            errBanner.textContent = "⚠️ " + (err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!");
+          });
       });
 
       window.quickDemoLogin = function (role) {
         var targetNext = (!requiredRole || role === requiredRole || role === "admin") ? nextUrl : null;
-        var res = window.SmartTroAuth.login(role + "@trothongminh.vn", "123456", role, null, targetNext);
-        window.location.href = res.redirectUrl;
+        Promise.resolve(window.SmartTroAuth.login(role + "@trothongminh.vn", "123456", role, null, targetNext))
+          .then(function (res) {
+            window.location.href = res.redirectUrl;
+          })
+          .catch(function (err) {
+            if (window.showToast) window.showToast(err.message || "Lỗi đăng nhập demo");
+          });
       };
     });
   </script>

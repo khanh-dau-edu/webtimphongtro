@@ -1,11 +1,13 @@
 /**
  * js/api.js
- * Tầng trung gian dữ liệu (Data Access Layer).
- * Mọi trang đều gọi qua SmartTroAPI. Hiện tại đọc từ data/*.json + localStorage.
- * Khi ghép Backend thật chỉ cần đổi các hàm trong file này sang gọi REST API.
+ * Tầng trung gian dữ liệu (Data Access Layer) kết nối REST API Backend (Node.js + SQLite).
+ * Tự động gửi kèm JWT Token trong Header và hỗ trợ Fallback sang dữ liệu tĩnh JSON
+ * trong trường hợp người dùng mở giao diện tĩnh mà chưa bật server Node.js.
  */
 (function (window) {
   "use strict";
+
+  var API_BASE = window.SMARTTRO_API_BASE || "/api";
 
   var STORAGE_KEYS = {
     COMPARE_IDS: "smarttro_compare_ids",
@@ -35,7 +37,58 @@
     }
   }
 
-  // Tự động xác định đường dẫn gốc dựa trên vị trí trang (root hay thư mục con landlord/, admin/, tenant/)
+  function getAuthHeaders(extraHeaders) {
+    var headers = Object.assign({}, extraHeaders || {});
+    if (window.SmartTroAuth && window.SmartTroAuth.getToken) {
+      var token = window.SmartTroAuth.getToken();
+      if (token) {
+        headers["Authorization"] = "Bearer " + token;
+      }
+    }
+    return headers;
+  }
+
+  // Gọi REST API Backend; ném lỗi rõ ràng nếu API trả mã lỗi 4xx/5xx hoặc mất kết nối
+  function apiRequest(endpoint, options) {
+    var opts = options || {};
+    var headers = getAuthHeaders(
+      opts.body && !(opts.body instanceof FormData)
+        ? { "Content-Type": "application/json" }
+        : {}
+    );
+    var fetchOpts = Object.assign({}, opts, { headers: headers });
+    if (
+      fetchOpts.body &&
+      typeof fetchOpts.body === "object" &&
+      !(fetchOpts.body instanceof FormData)
+    ) {
+      fetchOpts.body = JSON.stringify(fetchOpts.body);
+    }
+
+    return fetch(API_BASE + endpoint, fetchOpts).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) {
+          var err = new Error(data.error || "Lỗi API HTTP " + res.status);
+          err.status = res.status;
+          err.isHttpError = true;
+          throw err;
+        }
+        return data;
+      });
+    });
+  }
+
+  // Chỉ chuyển sang dữ liệu tĩnh dự phòng khi không có kết nối tới Server (Network Error / 404 tĩnh),
+  // giữ nguyên các lỗi nghiệp vụ 400/401/403/409 trả về từ Backend REST API
+  function onOfflineFallback(fallbackFn) {
+    return function (err) {
+      if (err && err.isHttpError && err.status !== 404 && err.status !== 405) {
+        throw err;
+      }
+      return fallbackFn();
+    };
+  }
+
   function getBasePath() {
     var path = window.location.pathname.replace(/\\/g, "/");
     if (
@@ -48,23 +101,24 @@
     return "";
   }
 
-  // Chuẩn hóa đường dẫn ảnh/tài nguyên theo cấp thư mục hiện tại
   function resolveAsset(relPath) {
     if (!relPath) return getBasePath() + "images/s-2.jpg";
-    if (relPath.indexOf("http") === 0 || relPath.indexOf("data:") === 0) {
+    if (
+      relPath.indexOf("http") === 0 ||
+      relPath.indexOf("data:") === 0 ||
+      relPath.indexOf("/uploads/") === 0
+    ) {
       return relPath;
     }
     var clean = relPath.replace(/^(\.\.\/)+/, "");
     return getBasePath() + clean;
   }
 
-  // Định dạng tiền tệ VNĐ (VD: 2.600.000 đ)
   function formatCurrency(amount) {
     var num = Number(amount) || 0;
     return num.toLocaleString("vi-VN") + " đ";
   }
 
-  // Định dạng giá ngắn gọn trên Card (VD: 2,6 triệu/tháng)
   function formatShortPrice(amount) {
     var num = Number(amount) || 0;
     if (num >= 1000000) {
@@ -74,9 +128,6 @@
     return formatCurrency(num) + "/tháng";
   }
 
-  /**
-   * Công thức Haversine tính khoảng cách đường chim bay (km) giữa 2 tọa độ GPS
-   */
   function calculateHaversine(lat1, lng1, lat2, lng2) {
     var R = 6371;
     var toRad = function (deg) {
@@ -94,8 +145,7 @@
     return Math.round(R * c * 100) / 100;
   }
 
-  // Hàm đọc file JSON qua fetch
-  function fetchJson(fileName) {
+  function fetchStaticJson(fileName) {
     var url = getBasePath() + "data/" + fileName;
     return fetch(url).then(function (res) {
       if (!res.ok) throw new Error("Không thể tải " + url);
@@ -103,38 +153,58 @@
     });
   }
 
-  // Lấy danh sách trường Đại học tại Đà Nẵng
+  function buildRoomQueryString(filters, extraParams) {
+    var params = new URLSearchParams();
+    var f = filters || {};
+    if (f.uniId) params.set("uniId", f.uniId);
+    if (f.priceRange && f.priceRange !== "ALL") params.set("priceRange", f.priceRange);
+    if (f.areaRange && f.areaRange !== "ALL") params.set("areaRange", f.areaRange);
+    if (f.type && f.type !== "ALL") params.set("type", f.type);
+    if (f.verifiedOnly) params.set("verifiedOnly", "true");
+    if (f.includeAllStatuses) params.set("includeAllStatuses", "true");
+    if (f.amenities && f.amenities.length > 0) {
+      params.set("amenities", f.amenities.join(","));
+    }
+    if (extraParams) {
+      Object.keys(extraParams).forEach(function (k) {
+        if (extraParams[k] !== undefined && extraParams[k] !== null) {
+          params.set(k, String(extraParams[k]));
+        }
+      });
+    }
+    var qs = params.toString();
+    return qs ? "?" + qs : "";
+  }
+
+  // -------------------------------------------------------------------------
+  // CÁC HÀM GỌI REST API (CÓ FALLBACK TĨNH KHI CHẠY OFFLINE KHÔNG SERVER)
+  // -------------------------------------------------------------------------
+
   function getUniversities() {
     if (_cache.universities) {
       return Promise.resolve(_cache.universities);
     }
-    return fetchJson("universities.json").then(function (data) {
-      _cache.universities = data;
-      return data;
-    });
+    return apiRequest("/universities")
+      .catch(function () {
+        return fetchStaticJson("universities.json");
+      })
+      .then(function (data) {
+        _cache.universities = data;
+        return data;
+      });
   }
 
-  // Gắn thông tin trường ĐH gần nhất và khoảng cách mặc định cho từng phòng
-  function attachNearestUni(rooms, universities, targetUniId) {
+  function attachNearestUniLocal(rooms, universities, targetUniId) {
     var targetUni = null;
     if (targetUniId && universities.length) {
-      for (var i = 0; i < universities.length; i++) {
-        if (universities[i].id === targetUniId) {
-          targetUni = universities[i];
-          break;
-        }
-      }
+      targetUni = universities.find(function (u) {
+        return u.id === targetUniId;
+      });
     }
-
     return rooms.map(function (room) {
       var copy = Object.assign({}, room);
       if (targetUni) {
-        copy.distanceKm = calculateHaversine(
-          targetUni.lat,
-          targetUni.lng,
-          copy.lat,
-          copy.lng
-        );
+        copy.distanceKm = calculateHaversine(targetUni.lat, targetUni.lng, copy.lat, copy.lng);
         copy.refUniName = targetUni.shortName;
         copy.refUniId = targetUni.id;
       } else if (universities && universities.length) {
@@ -150,459 +220,277 @@
         copy.distanceKm = minKm;
         copy.refUniName = nearest.shortName;
         copy.refUniId = nearest.id;
-      } else {
-        copy.distanceKm = 1.0;
-        copy.refUniName = "ĐH Đà Nẵng";
       }
       return copy;
     });
   }
 
-  // Ghép dữ liệu phòng gốc, phòng mới đăng và các cập nhật trạng thái/giá
-  function loadMergedRooms() {
-    return Promise.all([
-      _cache.rooms ? Promise.resolve(_cache.rooms) : fetchJson("rooms.json"),
-      getUniversities()
-    ]).then(function (results) {
-      _cache.rooms = results[0];
-      var universities = results[1];
-      var customRooms = safeReadJson(STORAGE_KEYS.CUSTOM_ROOMS, []);
-      var overrides = safeReadJson(STORAGE_KEYS.ROOM_OVERRIDES, {});
+  function getRoomsFallback(filters) {
+    return Promise.all([fetchStaticJson("rooms.json"), getUniversities()]).then(
+      function (results) {
+        var customRooms = safeReadJson(STORAGE_KEYS.CUSTOM_ROOMS, []);
+        var overrides = safeReadJson(STORAGE_KEYS.ROOM_OVERRIDES, {});
+        var includeAll = filters && filters.includeAllStatuses;
 
-      var combined = customRooms.concat(_cache.rooms).map(function (room) {
-        var key = String(room.id);
-        var ov = overrides[key];
-        if (!ov) return Object.assign({}, room);
-        var merged = Object.assign({}, room, ov);
-        if (ov.servicePrices) {
-          merged.servicePrices = Object.assign(
-            {},
-            room.servicePrices || {},
-            ov.servicePrices
-          );
-        }
-        return merged;
-      });
+        var merged = customRooms.concat(results[0]).map(function (r) {
+          var ov = overrides[String(r.id)];
+          if (!ov) return Object.assign({}, r);
+          var m = Object.assign({}, r, ov);
+          if (ov.servicePrices) {
+            m.servicePrices = Object.assign({}, r.servicePrices || {}, ov.servicePrices);
+          }
+          return m;
+        }).filter(function (r) {
+          return includeAll ? true : r.status === "ACTIVE";
+        });
 
-      return {
-        rooms: combined,
-        universities: universities
-      };
-    });
+        var enriched = attachNearestUniLocal(merged, results[1], filters && filters.uniId);
+        return enriched;
+      }
+    );
   }
 
-  // Lấy danh sách tất cả phòng trọ đang hoạt động (ACTIVE) hoặc theo bộ lọc
   function getRooms(filters) {
-    return loadMergedRooms().then(function (data) {
-      var includeAll = filters && filters.includeAllStatuses;
-      var list = data.rooms.filter(function (r) {
-        return includeAll ? true : r.status === "ACTIVE";
-      });
-
-      var uniId = filters && filters.uniId ? filters.uniId : null;
-      var enriched = attachNearestUni(list, data.universities, uniId);
-
-      if (!filters) return enriched;
-      return applyRoomFilters(enriched, filters);
+    var qs = buildRoomQueryString(filters);
+    return apiRequest("/rooms" + qs).catch(function () {
+      return getRoomsFallback(filters);
     });
   }
 
-  // Lấy danh sách phòng thuộc quyền quản lý của Chủ trọ (gồm phòng mới đăng + phòng mẫu của chủ trọ)
-  function getLandlordRooms() {
-    return Promise.all([loadMergedRooms(), getFlaggedData()]).then(function (res) {
-      var allMerged = attachNearestUni(res[0].rooms, res[0].universities, null);
-      var customIds = safeReadJson(STORAGE_KEYS.CUSTOM_ROOMS, []).map(function (r) {
-        return String(r.id);
-      });
+  function searchByRadius(uniId, radiusKm, filters) {
+    var qs = buildRoomQueryString(filters, {
+      mode: "radius",
+      uniId: uniId,
+      radius: radiusKm
+    });
+    return apiRequest("/rooms" + qs).catch(function () {
+      return Promise.all([getUniversities(), getRoomsFallback(filters)]).then(
+        function (res) {
+          var selectedUni =
+            res[0].find(function (u) { return u.id === uniId; }) || res[0][0];
+          var maxR = Number(radiusKm) || 0;
+          var list = res[1]
+            .map(function (r) {
+              var dist = calculateHaversine(selectedUni.lat, selectedUni.lng, r.lat, r.lng);
+              return Object.assign({}, r, {
+                distanceKm: dist,
+                refUniName: selectedUni.shortName,
+                refUniId: selectedUni.id
+              });
+            })
+            .filter(function (r) { return maxR <= 0 ? true : r.distanceKm <= maxR; })
+            .sort(function (a, b) { return a.distanceKm - b.distanceKm; });
+          return { university: selectedUni, rooms: list };
+        }
+      );
+    });
+  }
 
-      var managed = allMerged.filter(function (r) {
+  function getRoom(id) {
+    return apiRequest("/rooms/" + encodeURIComponent(id)).catch(function () {
+      return getRoomsFallback({ includeAllStatuses: true }).then(function (rooms) {
         return (
-          customIds.indexOf(String(r.id)) !== -1 ||
-          [1, 2, 3, 4].indexOf(Number(r.id)) !== -1
+          rooms.find(function (r) { return String(r.id) === String(id); }) || rooms[0]
         );
       });
-
-      // Kèm các tin đang bị gắn cờ FLAGGED trong phiên để chủ trọ theo dõi trạng thái
-      var flaggedList = (res[1].flaggedRooms || []).filter(function (f) {
-        return f.status === "FLAGGED" || f.status === "REJECTED";
-      });
-
-      return {
-        activeAndRented: managed,
-        flaggedOrRejected: flaggedList
-      };
     });
   }
 
-  // Cập nhật trạng thái phòng (ACTIVE, RENTED, SUSPENDED)
-  function updateRoomStatus(roomId, newStatus) {
-    var key = String(roomId);
-    var customRooms = safeReadJson(STORAGE_KEYS.CUSTOM_ROOMS, []);
-    var updatedInCustom = false;
-    customRooms = customRooms.map(function (r) {
-      if (String(r.id) === key) {
-        r.status = newStatus;
-        updatedInCustom = true;
-      }
-      return r;
-    });
-    if (updatedInCustom) {
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_ROOMS, JSON.stringify(customRooms));
-    }
-
-    var overrides = safeReadJson(STORAGE_KEYS.ROOM_OVERRIDES, {});
-    overrides[key] = Object.assign({}, overrides[key] || {}, { status: newStatus });
-    localStorage.setItem(STORAGE_KEYS.ROOM_OVERRIDES, JSON.stringify(overrides));
-    return Promise.resolve({ id: roomId, status: newStatus });
-  }
-
-  // Cập nhật nhanh giá thuê và đơn giá điện/nước của phòng
-  function updateRoomPricing(roomId, payload) {
-    var key = String(roomId);
-    var newPrice = Number(payload.price) || 0;
-    var newSp = {
-      electricity: Number(payload.electricity) || 3500,
-      water: Number(payload.water) || 15000,
-      wifi: Number(payload.wifi) || 0,
-      trash: Number(payload.trash) || 20000,
-      parking: Number(payload.parking) || 0
-    };
-
-    var customRooms = safeReadJson(STORAGE_KEYS.CUSTOM_ROOMS, []);
-    var foundCustom = false;
-    customRooms = customRooms.map(function (r) {
-      if (String(r.id) === key) {
-        if (newPrice > 0) r.price = newPrice;
-        r.servicePrices = Object.assign({}, r.servicePrices || {}, newSp);
-        foundCustom = true;
-      }
-      return r;
-    });
-    if (foundCustom) {
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_ROOMS, JSON.stringify(customRooms));
-    }
-
-    var overrides = safeReadJson(STORAGE_KEYS.ROOM_OVERRIDES, {});
-    var prev = overrides[key] || {};
-    overrides[key] = Object.assign({}, prev, {
-      price: newPrice > 0 ? newPrice : prev.price,
-      servicePrices: Object.assign({}, prev.servicePrices || {}, newSp)
-    });
-    localStorage.setItem(STORAGE_KEYS.ROOM_OVERRIDES, JSON.stringify(overrides));
-    return Promise.resolve(overrides[key]);
-  }
-
-  // Lọc phòng theo các tiêu chí: giá, diện tích, loại hình, tiện ích, chủ trọ xác thực
-  function applyRoomFilters(rooms, filters) {
-    return rooms.filter(function (room) {
-      if (filters.verifiedOnly && !room.verified) return false;
-      if (filters.type && filters.type !== "ALL" && room.type !== filters.type)
-        return false;
-
-      if (filters.priceRange && filters.priceRange !== "ALL") {
-        if (filters.priceRange === "UNDER_2M" && room.price >= 2000000)
-          return false;
-        if (
-          filters.priceRange === "2M_3M" &&
-          (room.price < 2000000 || room.price > 3000000)
-        )
-          return false;
-        if (
-          filters.priceRange === "3M_45M" &&
-          (room.price <= 3000000 || room.price > 4500000)
-        )
-          return false;
-        if (filters.priceRange === "OVER_45M" && room.price <= 4500000)
-          return false;
-      }
-
-      if (filters.areaRange && filters.areaRange !== "ALL") {
-        if (filters.areaRange === "UNDER_20" && room.area >= 20) return false;
-        if (
-          filters.areaRange === "20_30" &&
-          (room.area < 20 || room.area > 30)
-        )
-          return false;
-        if (filters.areaRange === "OVER_30" && room.area <= 30) return false;
-      }
-
-      if (filters.amenities && filters.amenities.length > 0) {
-        var roomAms = room.amenities || [];
-        for (var i = 0; i < filters.amenities.length; i++) {
-          if (roomAms.indexOf(filters.amenities[i]) === -1) return false;
-        }
-      }
-      return true;
-    });
-  }
-
-  // Tìm kiếm phòng theo bán kính (km) quanh trường Đại học bằng công thức Haversine
-  function searchByRadius(uniId, radiusKm, filters) {
-    var mergedFilters = Object.assign({}, filters || {}, { uniId: uniId });
-    return Promise.all([getUniversities(), getRooms(mergedFilters)]).then(
-      function (res) {
-        var universities = res[0];
-        var rooms = res[1];
-        var selectedUni =
-          universities.find(function (u) {
-            return u.id === uniId;
-          }) || universities[0];
-
-        var maxRadius = Number(radiusKm) || 0;
-        var filtered = rooms.filter(function (r) {
-          var dist = calculateHaversine(
-            selectedUni.lat,
-            selectedUni.lng,
-            r.lat,
-            r.lng
-          );
-          r.distanceKm = dist;
-          r.refUniName = selectedUni.shortName;
-          r.refUniId = selectedUni.id;
-          return maxRadius <= 0 ? true : dist <= maxRadius;
-        });
-
-        filtered.sort(function (a, b) {
-          return a.distanceKm - b.distanceKm;
-        });
-
+  function getLandlordRooms() {
+    return apiRequest("/rooms/landlord").catch(function () {
+      return Promise.all([
+        getRoomsFallback({ includeAllStatuses: true }),
+        fetchStaticJson("flagged.json")
+      ]).then(function (res) {
         return {
-          university: selectedUni,
-          rooms: filtered
+          activeAndRented: res[0].slice(0, 6),
+          flaggedOrRejected: res[1].flaggedRooms || []
         };
-      }
-    );
-  }
-
-  // Lấy thông tin chi tiết 1 phòng theo ID (cho phép xem cả phòng vừa đổi trạng thái)
-  function getRoom(id) {
-    var numId = Number(id) || 1;
-    return getRooms({ includeAllStatuses: true }).then(function (rooms) {
-      var found = rooms.find(function (r) {
-        return Number(r.id) === numId;
       });
-      return found || rooms[0];
     });
   }
 
-  // Lấy danh sách đánh giá của phòng (kết hợp reviews.json + đánh giá mới từ sinh viên)
+  function updateRoomStatus(roomId, newStatus) {
+    return apiRequest("/rooms/" + encodeURIComponent(roomId) + "/status", {
+      method: "PATCH",
+      body: { status: newStatus }
+    }).catch(function () {
+      var overrides = safeReadJson(STORAGE_KEYS.ROOM_OVERRIDES, {});
+      overrides[String(roomId)] = Object.assign({}, overrides[String(roomId)] || {}, {
+        status: newStatus
+      });
+      localStorage.setItem(STORAGE_KEYS.ROOM_OVERRIDES, JSON.stringify(overrides));
+      return { id: roomId, status: newStatus };
+    });
+  }
+
+  function updateRoomPricing(roomId, payload) {
+    return apiRequest("/rooms/" + encodeURIComponent(roomId) + "/pricing", {
+      method: "PATCH",
+      body: payload
+    }).catch(function () {
+      var overrides = safeReadJson(STORAGE_KEYS.ROOM_OVERRIDES, {});
+      overrides[String(roomId)] = Object.assign({}, overrides[String(roomId)] || {}, {
+        price: Number(payload.price),
+        servicePrices: {
+          electricity: Number(payload.electricity),
+          water: Number(payload.water),
+          wifi: Number(payload.wifi),
+          trash: Number(payload.trash),
+          parking: Number(payload.parking)
+        }
+      });
+      localStorage.setItem(STORAGE_KEYS.ROOM_OVERRIDES, JSON.stringify(overrides));
+      return overrides[String(roomId)];
+    });
+  }
+
+  function uploadRoomImage(fileObj) {
+    var fd = new FormData();
+    fd.append("image", fileObj);
+    return apiRequest("/upload", {
+      method: "POST",
+      body: fd
+    });
+  }
+
+  function createRoom(formData) {
+    return apiRequest("/rooms", {
+      method: "POST",
+      body: formData
+    }).catch(onOfflineFallback(function () {
+      return Promise.resolve(simulateModerationFallback(formData));
+    }));
+  }
+
   function getReviews(roomId) {
-    var p = _cache.reviews
-      ? Promise.resolve(_cache.reviews)
-      : fetchJson("reviews.json").then(function (data) {
-          _cache.reviews = data;
-          return data;
-        });
-    return p.then(function (baseList) {
-      var customReviews = safeReadJson(STORAGE_KEYS.CUSTOM_REVIEWS, []);
-      var all = customReviews.concat(baseList);
-      if (!roomId) return all;
-      return all.filter(function (item) {
-        return Number(item.roomId) === Number(roomId);
+    var qs = roomId ? "?roomId=" + encodeURIComponent(roomId) : "";
+    return apiRequest("/reviews" + qs).catch(onOfflineFallback(function () {
+      return fetchStaticJson("reviews.json").then(function (base) {
+        var custom = safeReadJson(STORAGE_KEYS.CUSTOM_REVIEWS, []);
+        var all = custom.concat(base);
+        return roomId
+          ? all.filter(function (x) { return Number(x.roomId) === Number(roomId); })
+          : all;
       });
-    });
+    }));
   }
 
-  // Sinh viên gửi đánh giá thực tế sau khi lịch hẹn có trạng thái "Đã hoàn thành"
   function createReview(reviewData) {
-    var customReviews = safeReadJson(STORAGE_KEYS.CUSTOM_REVIEWS, []);
-    var newReview = {
-      id: "RV-" + Date.now(),
-      roomId: Number(reviewData.roomId) || 1,
-      bookingId: reviewData.bookingId || null,
-      userName: reviewData.userName || "Sinh viên đã xác thực",
-      rating: Math.max(1, Math.min(5, Number(reviewData.rating) || 5)),
-      comment: reviewData.comment || "Phòng đúng mô tả, chi phí minh bạch.",
-      verifiedBooking: true,
-      createdAt: new Date().toISOString().slice(0, 10)
-    };
-    customReviews.unshift(newReview);
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_REVIEWS, JSON.stringify(customReviews));
-
-    if (reviewData.bookingId) {
-      var bOverrides = safeReadJson(STORAGE_KEYS.BOOKING_OVERRIDES, {});
-      bOverrides[String(reviewData.bookingId)] = Object.assign(
-        {},
-        bOverrides[String(reviewData.bookingId)] || {},
-        { reviewed: true, reviewId: newReview.id }
+    return apiRequest("/reviews", {
+      method: "POST",
+      body: reviewData
+    }).catch(onOfflineFallback(function () {
+      var custom = safeReadJson(STORAGE_KEYS.CUSTOM_REVIEWS, []);
+      var rv = Object.assign(
+        {
+          id: "RV-" + Date.now(),
+          verifiedBooking: true,
+          createdAt: new Date().toISOString().slice(0, 10)
+        },
+        reviewData
       );
-      localStorage.setItem(STORAGE_KEYS.BOOKING_OVERRIDES, JSON.stringify(bOverrides));
-    }
-
-    return Promise.resolve(newReview);
+      custom.unshift(rv);
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_REVIEWS, JSON.stringify(custom));
+      return rv;
+    }));
   }
 
-  // Lấy danh sách lịch hẹn xem phòng (kết hợp bookings.json + custom + trạng thái cập nhật)
   function getBookings() {
-    var p = _cache.bookings
-      ? Promise.resolve(_cache.bookings)
-      : fetchJson("bookings.json").then(function (data) {
-          _cache.bookings = data;
-          return data;
-        });
-    return p.then(function (base) {
-      var custom = safeReadJson(STORAGE_KEYS.CUSTOM_BOOKINGS, []);
-      var overrides = safeReadJson(STORAGE_KEYS.BOOKING_OVERRIDES, {});
-      return custom.concat(base).map(function (bk) {
-        var ov = overrides[String(bk.id)];
-        return ov ? Object.assign({}, bk, ov) : Object.assign({}, bk);
-      });
-    });
+    return apiRequest("/bookings").catch(onOfflineFallback(function () {
+      return fetchStaticJson("bookings.json");
+    }));
   }
 
-  // Tạo mới lịch hẹn xem phòng
   function createBooking(bookingData) {
-    var custom = safeReadJson(STORAGE_KEYS.CUSTOM_BOOKINGS, []);
-    var newBooking = Object.assign(
-      {
-        id: "BK-" + Math.floor(1000 + Math.random() * 9000),
-        status: "Chờ xác nhận",
-        reviewed: false,
-        createdAt: new Date().toISOString().slice(0, 10)
-      },
-      bookingData
-    );
-    custom.unshift(newBooking);
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_BOOKINGS, JSON.stringify(custom));
-    return Promise.resolve(newBooking);
-  }
-
-  // Cập nhật trạng thái lịch hẹn (Chờ xác nhận -> Đã xác nhận -> Đã hoàn thành / Đã hủy)
-  function updateBookingStatus(bookingId, newStatus) {
-    var key = String(bookingId);
-    var custom = safeReadJson(STORAGE_KEYS.CUSTOM_BOOKINGS, []);
-    var foundCustom = false;
-    custom = custom.map(function (b) {
-      if (String(b.id) === key) {
-        b.status = newStatus;
-        foundCustom = true;
-      }
-      return b;
-    });
-    if (foundCustom) {
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_BOOKINGS, JSON.stringify(custom));
-    }
-
-    var overrides = safeReadJson(STORAGE_KEYS.BOOKING_OVERRIDES, {});
-    overrides[key] = Object.assign({}, overrides[key] || {}, {
-      status: newStatus,
-      updatedAt: new Date().toISOString().slice(0, 16).replace("T", " ")
-    });
-    localStorage.setItem(STORAGE_KEYS.BOOKING_OVERRIDES, JSON.stringify(overrides));
-    return Promise.resolve({ id: bookingId, status: newStatus });
-  }
-
-  // Gửi báo cáo vi phạm từ trang chi tiết phòng
-  function createReport(reportData) {
-    var user =
-      window.SmartTroAuth && window.SmartTroAuth.getCurrentUser
-        ? window.SmartTroAuth.getCurrentUser()
-        : null;
-    var reports = safeReadJson(STORAGE_KEYS.CUSTOM_REPORTS, []);
-    var newReport = Object.assign(
-      {
-        id: "RP-" + Math.floor(200 + Math.random() * 800),
-        reporterName:
-          reportData.reporterName || (user ? user.name : "Sinh viên ẩn danh"),
-        reporterPhone:
-          reportData.reporterPhone || (user && user.phone ? user.phone : "0905000999"),
-        status: "PENDING",
-        createdAt: new Date().toISOString().slice(0, 16).replace("T", " ")
-      },
-      reportData
-    );
-    reports.unshift(newReport);
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_REPORTS, JSON.stringify(reports));
-    return Promise.resolve(newReport);
-  }
-
-  // Lấy toàn bộ danh sách báo cáo vi phạm từ người dùng (mẫu + mới gửi)
-  function getViolationReports() {
-    return getFlaggedData().then(function (state) {
-      var baseReports = state.violationReports || [];
-      var customReports = safeReadJson(STORAGE_KEYS.CUSTOM_REPORTS, []);
-      return customReports.concat(baseReports);
-    });
-  }
-
-  // Admin xử lý báo cáo vi phạm từ sinh viên
-  function updateReportStatus(reportId, newStatus) {
-    var key = String(reportId);
-    var targetReport = null;
-
-    var customReports = safeReadJson(STORAGE_KEYS.CUSTOM_REPORTS, []);
-    var inCustom = false;
-    customReports = customReports.map(function (rp) {
-      if (String(rp.id) === key) {
-        rp.status = newStatus;
-        targetReport = rp;
-        inCustom = true;
-      }
-      return rp;
-    });
-    if (inCustom) {
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_REPORTS, JSON.stringify(customReports));
-    }
-
-    return getFlaggedData().then(function (state) {
-      state.violationReports = (state.violationReports || []).map(function (rp) {
-        if (String(rp.id) === key) {
-          rp.status = newStatus;
-          targetReport = rp;
-        }
-        return rp;
-      });
-      localStorage.setItem(STORAGE_KEYS.FLAGGED_STATE, JSON.stringify(state));
-
-      if (targetReport && targetReport.roomId) {
-        if (newStatus === "RESOLVED") {
-          return updateRoomStatus(targetReport.roomId, "SUSPENDED").then(function () {
-            return targetReport;
-          });
-        } else {
-          return updateRoomStatus(targetReport.roomId, "ACTIVE").then(function () {
-            return targetReport;
-          });
-        }
-      }
-      return targetReport;
-    });
-  }
-
-  // Chủ trọ gửi hồ sơ xác thực eKYC mới lên hệ thống Admin
-  function submitEkycRequest(ekycPayload) {
-    return getFlaggedData().then(function (state) {
-      var cccdClean = String(ekycPayload.cccdNumber || "").replace(/\D/g, "");
-      var hasDoc = Boolean(
-        ekycPayload.propertyDoc && ekycPayload.propertyDoc.trim().length > 5
+    return apiRequest("/bookings", {
+      method: "POST",
+      body: bookingData
+    }).catch(onOfflineFallback(function () {
+      var custom = safeReadJson(STORAGE_KEYS.CUSTOM_BOOKINGS, []);
+      var bk = Object.assign(
+        {
+          id: "BK-" + Math.floor(1000 + Math.random() * 9000),
+          status: "Chờ xác nhận",
+          reviewed: false,
+          createdAt: new Date().toISOString().slice(0, 10)
+        },
+        bookingData
       );
-      var simulatedScore =
-        cccdClean.length === 12 && hasDoc ? 95 : cccdClean.length >= 9 ? 82 : 63;
+      custom.unshift(bk);
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_BOOKINGS, JSON.stringify(custom));
+      return bk;
+    }));
+  }
 
-      var newReq = {
-        id: "EKYC-" + Math.floor(400 + Math.random() * 500),
-        landlordName: ekycPayload.landlordName || "Chủ trọ đăng ký mới",
-        phone: ekycPayload.phone || "0905111333",
-        cccdNumber: cccdClean || "048095001234",
-        address: ekycPayload.address || "Liên Chiểu, Đà Nẵng",
-        submittedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
-        faceMatchScore: simulatedScore,
-        ocrStatus:
-          cccdClean.length === 12
-            ? "Khớp 100% số CCCD 12 số & Họ tên chủ hộ"
-            : "Số CCCD chưa đủ 12 số chuẩn gắn chip, cần hậu kiểm",
-        propertyDoc: ekycPayload.propertyDoc || "Chưa đính kèm giấy tờ nhà trọ",
-        status: "PENDING"
-      };
-
-      state.ekycRequests = state.ekycRequests || [];
-      state.ekycRequests.unshift(newReq);
-      localStorage.setItem(STORAGE_KEYS.FLAGGED_STATE, JSON.stringify(state));
-      return newReq;
+  function updateBookingStatus(bookingId, newStatus) {
+    return apiRequest("/bookings/" + encodeURIComponent(bookingId) + "/status", {
+      method: "PATCH",
+      body: { status: newStatus }
     });
   }
 
-  // Quản lý danh sách phòng lưu để So sánh (tối đa 3 phòng)
+  function createReport(reportData) {
+    return apiRequest("/reports", {
+      method: "POST",
+      body: reportData
+    });
+  }
+
+  function getViolationReports() {
+    return apiRequest("/reports").catch(function () {
+      return fetchStaticJson("flagged.json").then(function (d) {
+        return d.violationReports || [];
+      });
+    });
+  }
+
+  function updateReportStatus(reportId, newStatus) {
+    return apiRequest("/reports/" + encodeURIComponent(reportId) + "/status", {
+      method: "PATCH",
+      body: { status: newStatus }
+    });
+  }
+
+  function submitEkycRequest(ekycPayload) {
+    return apiRequest("/ekyc", {
+      method: "POST",
+      body: ekycPayload
+    });
+  }
+
+  function getFlaggedData() {
+    return apiRequest("/admin/moderation").catch(function () {
+      return fetchStaticJson("flagged.json");
+    });
+  }
+
+  function updateFlaggedStatus(id, newStatus) {
+    return apiRequest("/admin/flagged/" + encodeURIComponent(id), {
+      method: "PATCH",
+      body: { status: newStatus }
+    });
+  }
+
+  function updateEkycStatus(id, newStatus) {
+    return apiRequest("/admin/ekyc/" + encodeURIComponent(id), {
+      method: "PATCH",
+      body: { status: newStatus }
+    });
+  }
+
+  function resetAdminDemoData() {
+    return apiRequest("/admin/reset-demo-public", {
+      method: "POST"
+    }).then(function () {
+      localStorage.removeItem(STORAGE_KEYS.FLAGGED_STATE);
+      localStorage.removeItem(STORAGE_KEYS.CUSTOM_REPORTS);
+      localStorage.removeItem(STORAGE_KEYS.ROOM_OVERRIDES);
+      return getFlaggedData();
+    });
+  }
+
+  // Quản lý danh sách lưu so sánh phòng ở phía trình duyệt
   function getCompareIds() {
     var parsed = safeReadJson(STORAGE_KEYS.COMPARE_IDS, null);
     if (!parsed || !Array.isArray(parsed)) return [1, 4, 5];
@@ -645,258 +533,44 @@
     return ids;
   }
 
-  /**
-   * Hàm giả lập kiểm duyệt tin đăng phòng trọ tự động (AI & Rule-based Moderation)
-   */
-  function simulateModeration(formData) {
+  // Fallback kiểm duyệt cục bộ nếu chạy không có Backend
+  function simulateModerationFallback(formData) {
     var score = 100;
     var reasons = [];
-
-    // Bước 1: Kiểm tra từ khóa cấm
-    var bannedKeywords = [
-      "cọc giữ chỗ",
-      "chuyển khoản trước",
-      "cọc gấp",
-      "giữ phòng gấp",
-      "cam kết 100%",
-      "lừa đảo"
-    ];
-    var textToScan = (
-      (formData.title || "") +
-      " " +
-      (formData.address || "") +
-      " " +
-      (formData.note || "")
-    ).toLowerCase();
-    var hitKeyword = null;
-    for (var i = 0; i < bannedKeywords.length; i++) {
-      if (textToScan.indexOf(bannedKeywords[i]) !== -1) {
-        hitKeyword = bannedKeywords[i];
-        break;
-      }
-    }
-    var keywordCheck = {
-      passed: !hitKeyword,
-      detail: hitKeyword
-        ? 'Phát hiện từ khóa nhạy cảm: "' + hitKeyword + '"'
-        : "Không chứa từ khóa cấm hoặc yêu cầu đặt cọc bất thường"
-    };
-    if (!keywordCheck.passed) {
-      score -= 35;
-      reasons.push('Từ khóa cấm: "' + hitKeyword + '"');
-    }
-
-    // Bước 2: Kiểm tra trùng ảnh pHash
-    var isDuplicateImg =
-      formData.imageMode === "DUPLICATE" ||
-      (formData.image && formData.image.indexOf("d-1.jpg") !== -1 && formData.simulateFlag);
-    var pHashSimilarity = isDuplicateImg ? 94 : formData.uploadedFile ? 8 : 14;
-    var pHashCheck = {
-      passed: !isDuplicateImg,
-      detail: isDuplicateImg
-        ? "Độ tương đồng pHash " + pHashSimilarity + "% (Trùng với tin #4 trên hệ thống)"
-        : "Độ tương đồng pHash " + pHashSimilarity + "% (< 75% - Ảnh gốc hợp lệ)"
-    };
-    if (!pHashCheck.passed) {
-      score -= 30;
-      reasons.push("Trùng ảnh pHash (" + pHashSimilarity + "%)");
-    }
-
-    // Bước 3: Kiểm tra dữ liệu EXIF ảnh
-    var missingExif = formData.exifMode === "MISSING" || isDuplicateImg;
-    var exifCheck = {
-      passed: !missingExif,
-      detail: missingExif
-        ? "Ảnh thiếu EXIF Camera & tọa độ GPS Đà Nẵng"
-        : formData.uploadedFileName
-        ? "Ảnh tải lên (" + formData.uploadedFileName + "): Metadata hợp lệ"
-        : "EXIF hợp lệ: Có thông tin thiết bị chụp & tọa độ GPS khớp vị trí"
-    };
-    if (!exifCheck.passed) {
-      score -= 15;
-      reasons.push("Thiếu dữ liệu EXIF GPS");
-    }
-
-    // Bước 4: Kiểm tra giá thuê & đơn giá điện nước bất thường
+    var bannedKeywords = ["cọc giữ chỗ", "chuyển khoản trước", "cọc gấp", "giữ phòng gấp", "cam kết 100%", "lừa đảo"];
+    var text = ((formData.title || "") + " " + (formData.address || "")).toLowerCase();
+    var hit = bannedKeywords.find(function (k) { return text.indexOf(k) !== -1; }) || null;
+    if (hit) { score -= 35; reasons.push('Từ khóa cấm: "' + hit + '"'); }
+    var dup = formData.imageMode === "DUPLICATE";
+    if (dup) { score -= 30; reasons.push("Trùng ảnh pHash (94%)"); }
+    var missExif = formData.exifMode === "MISSING" || dup;
+    if (missExif) { score -= 15; reasons.push("Thiếu dữ liệu EXIF GPS"); }
     var price = Number(formData.price) || 0;
     var area = Number(formData.area) || 20;
     var elec = Number(formData.electricity) || 3500;
     var water = Number(formData.water) || 15000;
-    var priceIssues = [];
-
-    if (price < 900000 || price / area < 45000) {
-      priceIssues.push("Giá thuê/m² thấp bất thường so với khu vực");
-    }
-    if (elec > 4000) {
-      priceIssues.push("Giá điện " + elec.toLocaleString("vi-VN") + "đ/kWh (> 4.000đ)");
-    }
-    if (water > 20000) {
-      priceIssues.push("Giá nước " + water.toLocaleString("vi-VN") + "đ/m³ (> 20.000đ)");
-    }
-
-    var priceCheck = {
-      passed: priceIssues.length === 0,
-      detail:
-        priceIssues.length > 0
-          ? priceIssues.join("; ")
-          : "Giá thuê & đơn giá điện/nước nằm trong ngưỡng minh bạch"
-    };
-    if (!priceCheck.passed) {
-      score -= 25;
-      priceIssues.forEach(function (iss) {
-        reasons.push(iss);
-      });
-    }
-
+    var pIssues = [];
+    if (price < 900000 || price / area < 45000) pIssues.push("Giá thuê/m² thấp bất thường");
+    if (elec > 4000) pIssues.push("Giá điện > 4.000đ/kWh");
+    if (water > 20000) pIssues.push("Giá nước > 20.000đ/m³");
+    if (pIssues.length) { score -= 25; reasons = reasons.concat(pIssues); }
     score = Math.max(10, Math.min(100, score));
-    var finalStatus =
-      score >= 70 && keywordCheck.passed && pHashCheck.passed ? "ACTIVE" : "FLAGGED";
-
-    var currentUser =
-      window.SmartTroAuth && window.SmartTroAuth.getCurrentUser
-        ? window.SmartTroAuth.getCurrentUser()
-        : null;
-
-    var chosenImg = formData.image || "images/s-2.jpg";
-    var resultObj = {
-      id:
-        finalStatus === "ACTIVE"
-          ? Date.now()
-          : "FL-" + Math.floor(300 + Math.random() * 600),
-      title: formData.title || "Phòng trọ mới đăng",
-      address: formData.address || "Liên Chiểu, Đà Nẵng",
-      district: formData.district || "Liên Chiểu",
-      price: price,
-      area: area,
-      type: formData.type || "Phòng trọ",
-      lat: Number(formData.lat) || 16.0738,
-      lng: Number(formData.lng) || 108.1499,
-      image: chosenImg,
-      images: [chosenImg, "images/s-3.jpg", "images/d-2.jpg"],
-      amenities:
-        formData.amenities || ["Điều hòa", "Nóng lạnh", "Giờ giấc tự do"],
-      verified: true,
-      landlordName:
-        formData.landlordName ||
-        (currentUser ? currentUser.name : "Cô Nguyễn Thị Hòa"),
-      landlordPhone:
-        formData.landlordPhone ||
-        (currentUser && currentUser.phone ? currentUser.phone : "0905123456"),
-      submittedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+    var status = score >= 70 && !hit && !dup ? "ACTIVE" : "FLAGGED";
+    return {
+      id: status === "ACTIVE" ? Date.now() : "FL-" + Math.floor(300 + Math.random() * 600),
+      title: formData.title,
+      status: status,
       trustScore: score,
-      status: finalStatus,
       reasons: reasons,
       checks: {
-        keyword: keywordCheck,
-        pHash: pHashCheck,
-        exif: exifCheck,
-        price: priceCheck
-      },
-      servicePrices: {
-        electricity: elec,
-        water: water,
-        wifi: Number(formData.wifi) || 0,
-        trash: Number(formData.trash) || 20000,
-        parking: Number(formData.parking) || 0
+        keyword: { passed: !hit, detail: hit ? 'Phát hiện: "' + hit + '"' : "Hợp lệ" },
+        pHash: { passed: !dup, detail: dup ? "Trùng pHash 94%" : "Ảnh gốc hợp lệ" },
+        exif: { passed: !missExif, detail: missExif ? "Thiếu EXIF" : "EXIF hợp lệ" },
+        price: { passed: pIssues.length === 0, detail: pIssues.join("; ") || "Giá minh bạch" }
       }
     };
-
-    if (finalStatus === "ACTIVE") {
-      var customRooms = safeReadJson(STORAGE_KEYS.CUSTOM_ROOMS, []);
-      customRooms.unshift(resultObj);
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_ROOMS, JSON.stringify(customRooms));
-    } else {
-      getFlaggedData().then(function (flaggedState) {
-        flaggedState.flaggedRooms.unshift(resultObj);
-        localStorage.setItem(
-          STORAGE_KEYS.FLAGGED_STATE,
-          JSON.stringify(flaggedState)
-        );
-      });
-    }
-
-    return resultObj;
   }
 
-  // Lấy dữ liệu tin bị gắn cờ, hồ sơ eKYC & báo cáo vi phạm mẫu cho trang Admin
-  function getFlaggedData() {
-    var saved = safeReadJson(STORAGE_KEYS.FLAGGED_STATE, null);
-    if (saved && saved.violationReports) {
-      return Promise.resolve(saved);
-    }
-
-    return fetchJson("flagged.json").then(function (data) {
-      if (saved) {
-        data.flaggedRooms = saved.flaggedRooms || data.flaggedRooms;
-        data.ekycRequests = saved.ekycRequests || data.ekycRequests;
-      }
-      localStorage.setItem(STORAGE_KEYS.FLAGGED_STATE, JSON.stringify(data));
-      return data;
-    });
-  }
-
-  // Admin Duyệt hoặc Từ chối tin bị gắn cờ
-  function updateFlaggedStatus(id, newStatus) {
-    return getFlaggedData().then(function (state) {
-      var target = null;
-      state.flaggedRooms = state.flaggedRooms.map(function (item) {
-        if (String(item.id) === String(id)) {
-          item.status = newStatus;
-          target = item;
-        }
-        return item;
-      });
-      localStorage.setItem(STORAGE_KEYS.FLAGGED_STATE, JSON.stringify(state));
-
-      if (newStatus === "APPROVED" && target) {
-        var customRooms = safeReadJson(STORAGE_KEYS.CUSTOM_ROOMS, []);
-        var approvedRoom = Object.assign({}, target, {
-          id: Date.now(),
-          status: "ACTIVE",
-          verified: true,
-          lat: target.lat || 16.0715,
-          lng: target.lng || 108.1512,
-          images: [target.image || "images/s-2.jpg", "images/d-1.jpg"],
-          amenities: target.amenities || ["Điều hòa", "Nóng lạnh", "Chỗ để xe"]
-        });
-        customRooms.unshift(approvedRoom);
-        localStorage.setItem(STORAGE_KEYS.CUSTOM_ROOMS, JSON.stringify(customRooms));
-      }
-      return state;
-    });
-  }
-
-  // Admin Duyệt hoặc Từ chối hồ sơ eKYC
-  function updateEkycStatus(id, newStatus) {
-    return getFlaggedData().then(function (state) {
-      state.ekycRequests = state.ekycRequests.map(function (req) {
-        if (String(req.id) === String(id)) {
-          req.status = newStatus;
-        }
-        return req;
-      });
-      localStorage.setItem(STORAGE_KEYS.FLAGGED_STATE, JSON.stringify(state));
-      return state;
-    });
-  }
-
-  // Khôi phục dữ liệu mẫu Admin hậu kiểm
-  function resetAdminDemoData() {
-    localStorage.removeItem(STORAGE_KEYS.FLAGGED_STATE);
-    localStorage.removeItem(STORAGE_KEYS.CUSTOM_REPORTS);
-    var overrides = safeReadJson(STORAGE_KEYS.ROOM_OVERRIDES, {});
-    Object.keys(overrides).forEach(function (k) {
-      if (overrides[k] && overrides[k].status === "SUSPENDED") {
-        overrides[k].status = "ACTIVE";
-      }
-    });
-    localStorage.setItem(STORAGE_KEYS.ROOM_OVERRIDES, JSON.stringify(overrides));
-    return getFlaggedData();
-  }
-
-  /**
-   * Render HTML cho Card phòng trọ theo đúng nguyên tắc ÍT CHỮ
-   */
   function renderRoomCard(room, colClass) {
     var compareIds = getCompareIds();
     var isCompared = compareIds.indexOf(Number(room.id)) !== -1;
@@ -987,6 +661,7 @@
   };
 
   window.SmartTroAPI = {
+    apiRequest: apiRequest,
     getBasePath: getBasePath,
     resolveAsset: resolveAsset,
     formatCurrency: formatCurrency,
@@ -998,6 +673,9 @@
     getLandlordRooms: getLandlordRooms,
     updateRoomStatus: updateRoomStatus,
     updateRoomPricing: updateRoomPricing,
+    uploadRoomImage: uploadRoomImage,
+    createRoom: createRoom,
+    simulateModeration: createRoom,
     searchByRadius: searchByRadius,
     getReviews: getReviews,
     createReview: createReview,
@@ -1011,7 +689,6 @@
     getCompareIds: getCompareIds,
     toggleCompareRoom: toggleCompareRoom,
     replaceCompareSlot: replaceCompareSlot,
-    simulateModeration: simulateModeration,
     getFlaggedData: getFlaggedData,
     updateFlaggedStatus: updateFlaggedStatus,
     updateEkycStatus: updateEkycStatus,
