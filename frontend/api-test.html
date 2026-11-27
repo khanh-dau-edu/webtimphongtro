@@ -49,7 +49,9 @@
     }
     .m-GET { background: #2563eb; }
     .m-POST { background: #16a34a; }
-    .m-PATCH { background: #d97706; }
+    .m-PUT { background: #ea580c; }
+    .m-PATCH { background: #0d9488; }
+    .m-DELETE { background: #dc2626; }
     .code-editor {
       font-family: Consolas, Monaco, 'Courier New', monospace;
       font-size: 13px;
@@ -100,6 +102,7 @@
 
       <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
         <span class="db-counter-pill" id="liveDbCounts">Đang tải bộ đếm CSDL...</span>
+        <a href="/api-docs" class="btn btn-sm btn-success font-weight-bold">📘 Mở Swagger UI Chuẩn (/api-docs)</a>
         <a href="index.html" class="btn btn-sm btn-warning font-weight-bold text-dark">🏠 Mở Giao diện Web</a>
       </div>
     </div>
@@ -161,7 +164,9 @@
                 <select id="reqMethod" class="form-control font-weight-bold">
                   <option value="GET">GET</option>
                   <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
                   <option value="PATCH">PATCH</option>
+                  <option value="DELETE">DELETE</option>
                 </select>
               </div>
               <div class="col-md-8 col-8 mb-2 mb-md-0">
@@ -221,7 +226,30 @@
         {
           method: "GET",
           url: "/api/rooms/1",
-          label: "Xem chi tiết Phòng #1 & Khoảng cách"
+          label: "[READ] Xem chi tiết Phòng #1"
+        },
+        {
+          method: "PUT",
+          url: "/api/rooms/1",
+          label: "[UPDATE] Cập nhật toàn bộ Phòng #1 (PUT)",
+          body: {
+            title: "Studio Cửa Sổ Lớn Hòa Khánh (Đã nâng cấp)",
+            address: "112 Nguyễn Lương Bằng, Hòa Khánh Bắc, Liên Chiểu",
+            district: "Liên Chiểu",
+            price: 2650000,
+            area: 25,
+            type: "Căn hộ mini",
+            electricity: 3500,
+            water: 12000,
+            wifi: 50000,
+            trash: 20000,
+            parking: 0
+          }
+        },
+        {
+          method: "DELETE",
+          url: "/api/rooms/14",
+          label: "[DELETE] Xóa Phòng #14 khỏi CSDL"
         },
         {
           method: "POST",

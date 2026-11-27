@@ -184,8 +184,12 @@
           <div class="modal-body">
             <input type="hidden" id="editRoomId">
             <div class="form-group">
-              <label class="small font-weight-bold">Phòng đang chỉnh sửa</label>
-              <input type="text" id="editRoomTitle" class="form-control" readonly>
+              <label class="small font-weight-bold">Tiêu đề phòng trọ *</label>
+              <input type="text" id="editRoomTitle" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="small font-weight-bold">Địa chỉ chi tiết *</label>
+              <input type="text" id="editRoomAddress" class="form-control" required>
             </div>
             <div class="form-group">
               <label class="small font-weight-bold">Giá thuê / tháng (VNĐ) *</label>
@@ -322,7 +326,8 @@
               '    </div>' +
               '    <div class="col-md-3 mt-3 mt-md-0">' +
               toggleBtnHtml +
-              '      <button type="button" class="btn btn-outline-primary btn-sm btn-block font-weight-bold" onclick="openPricingModal(\'' + r.id + '\')">✏️ Sửa giá & Điện nước</button>' +
+              '      <button type="button" class="btn btn-outline-primary btn-sm btn-block font-weight-bold mb-2" onclick="openPricingModal(\'' + r.id + '\')">✏️ Sửa thông tin & giá (PUT)</button>' +
+              '      <button type="button" class="btn btn-outline-danger btn-sm btn-block" onclick="handleDeleteRoom(\'' + r.id + '\')">🗑️ Xóa phòng (DELETE)</button>' +
               '    </div>' +
               '  </div>' +
               '</div>'
@@ -456,6 +461,7 @@
         var sp = r.servicePrices || {};
         document.getElementById("editRoomId").value = r.id;
         document.getElementById("editRoomTitle").value = r.title;
+        document.getElementById("editRoomAddress").value = r.address || "";
         document.getElementById("editRoomPrice").value = r.price;
         document.getElementById("editRoomElec").value = sp.electricity || 3500;
         document.getElementById("editRoomWater").value = sp.water || 15000;
@@ -465,10 +471,24 @@
         $("#editPricingModal").modal("show");
       };
 
+      window.handleDeleteRoom = function (roomId) {
+        if (!window.confirm("Bạn có chắc chắn muốn xóa vĩnh viễn phòng #" + roomId + " khỏi CSDL không?")) {
+          return;
+        }
+        window.SmartTroAPI.deleteRoom(roomId).then(function () {
+          loadDashboard();
+          if (window.showToast) {
+            window.showToast("Đã xóa phòng #" + roomId + " khỏi hệ thống!");
+          }
+        });
+      };
+
       document.getElementById("editPricingForm").addEventListener("submit", function (e) {
         e.preventDefault();
         var rId = document.getElementById("editRoomId").value;
-        window.SmartTroAPI.updateRoomPricing(rId, {
+        window.SmartTroAPI.updateRoom(rId, {
+          title: document.getElementById("editRoomTitle").value,
+          address: document.getElementById("editRoomAddress").value,
           price: document.getElementById("editRoomPrice").value,
           electricity: document.getElementById("editRoomElec").value,
           water: document.getElementById("editRoomWater").value,
@@ -479,7 +499,7 @@
           $("#editPricingModal").modal("hide");
           loadDashboard();
           if (window.showToast) {
-            window.showToast("Đã cập nhật bảng giá mới cho phòng #" + rId + "!");
+            window.showToast("Đã cập nhật thông tin & bảng giá phòng #" + rId + " (PUT)!");
           }
         });
       });

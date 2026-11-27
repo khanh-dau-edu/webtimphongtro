@@ -288,11 +288,24 @@
 
   function getRoom(id) {
     return apiRequest("/rooms/" + encodeURIComponent(id)).catch(function () {
-      return getRoomsFallback({ includeAllStatuses: true }).then(function (rooms) {
+      return getRooms().then(function (rooms) {
         return (
           rooms.find(function (r) { return String(r.id) === String(id); }) || rooms[0]
         );
       });
+    });
+  }
+
+  function updateRoom(roomId, payload) {
+    return apiRequest("/rooms/" + encodeURIComponent(roomId), {
+      method: "PUT",
+      body: payload
+    });
+  }
+
+  function deleteRoom(roomId) {
+    return apiRequest("/rooms/" + encodeURIComponent(roomId), {
+      method: "DELETE"
     });
   }
 
@@ -427,6 +440,25 @@
     return apiRequest("/bookings/" + encodeURIComponent(bookingId) + "/status", {
       method: "PATCH",
       body: { status: newStatus }
+    });
+  }
+
+  function deleteBooking(bookingId) {
+    return apiRequest("/bookings/" + encodeURIComponent(bookingId), {
+      method: "DELETE"
+    });
+  }
+
+  function updateReview(reviewId, payload) {
+    return apiRequest("/reviews/" + encodeURIComponent(reviewId), {
+      method: "PUT",
+      body: payload
+    });
+  }
+
+  function deleteReview(reviewId) {
+    return apiRequest("/reviews/" + encodeURIComponent(reviewId), {
+      method: "DELETE"
     });
   }
 
@@ -671,6 +703,8 @@
     getRooms: getRooms,
     getRoom: getRoom,
     getLandlordRooms: getLandlordRooms,
+    updateRoom: updateRoom,
+    deleteRoom: deleteRoom,
     updateRoomStatus: updateRoomStatus,
     updateRoomPricing: updateRoomPricing,
     uploadRoomImage: uploadRoomImage,
@@ -679,9 +713,12 @@
     searchByRadius: searchByRadius,
     getReviews: getReviews,
     createReview: createReview,
+    updateReview: updateReview,
+    deleteReview: deleteReview,
     getBookings: getBookings,
     createBooking: createBooking,
     updateBookingStatus: updateBookingStatus,
+    deleteBooking: deleteBooking,
     createReport: createReport,
     getViolationReports: getViolationReports,
     updateReportStatus: updateReportStatus,
