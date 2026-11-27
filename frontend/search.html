@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Tìm Kiếm Phòng Trọ Theo Bán Kính Trường - Trọ Thông Minh</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS (CDN) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Template styles -->
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/responsive.css" rel="stylesheet" />
+  <link href="css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="index.html">
+            <img src="images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Nội dung Tìm kiếm & Bản đồ -->
+  <section class="layout_padding2">
+    <div class="container-fluid px-lg-5">
+      <div class="heading_container mb-3">
+        <h2>Tìm Phòng Quanh Trường</h2>
+      </div>
+
+      <!-- Bộ lọc tìm kiếm -->
+      <div class="filter-panel">
+        <form id="searchFilterForm">
+          <div class="form-row">
+            <div class="col-lg-3 col-md-6 mb-2">
+              <label for="filterUni">🎓 Trường Đại học</label>
+              <select id="filterUni" class="form-control form-control-sm"></select>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-2">
+              <label for="filterRadius">⭕ Bán kính (Haversine)</label>
+              <select id="filterRadius" class="form-control form-control-sm">
+                <option value="1">1 km quanh trường</option>
+                <option value="2">2 km quanh trường</option>
+                <option value="3">3 km quanh trường</option>
+                <option value="5" selected>5 km quanh trường</option>
+                <option value="0">Tất cả Đà Nẵng</option>
+              </select>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-2">
+              <label for="filterPrice">💰 Mức giá/tháng</label>
+              <select id="filterPrice" class="form-control form-control-sm">
+                <option value="ALL">Tất cả mức giá</option>
+                <option value="UNDER_2M">Dưới 2 triệu</option>
+                <option value="2M_3M">2 - 3 triệu</option>
+                <option value="3M_45M">3 - 4.5 triệu</option>
+                <option value="OVER_45M">Trên 4.5 triệu</option>
+              </select>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-2">
+              <label for="filterArea">📐 Diện tích</label>
+              <select id="filterArea" class="form-control form-control-sm">
+                <option value="ALL">Tất cả diện tích</option>
+                <option value="UNDER_20">Dưới 20 m²</option>
+                <option value="20_30">20 - 30 m²</option>
+                <option value="OVER_30">Trên 30 m²</option>
+              </select>
+            </div>
+            <div class="col-lg-3 col-md-4 mb-2">
+              <label for="filterType">🏠 Loại hình</label>
+              <select id="filterType" class="form-control form-control-sm">
+                <option value="ALL">Tất cả loại hình</option>
+                <option value="Phòng trọ">Phòng trọ</option>
+                <option value="Căn hộ mini">Căn hộ mini</option>
+                <option value="Ở ghép">Ở ghép</option>
+                <option value="Nhà nguyên căn">Nhà nguyên căn</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tiện ích & Chủ trọ xác thực -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 pt-2 border-top" style="gap: 10px;">
+            <div class="amenity-pills-wrap">
+              <label class="amenity-check-pill">
+                <input type="checkbox" name="amenity" value="Điều hòa">
+                <span>❄️ Điều hòa</span>
+              </label>
+              <label class="amenity-check-pill">
+                <input type="checkbox" name="amenity" value="Nóng lạnh">
+                <span>🚿 Nóng lạnh</span>
+              </label>
+              <label class="amenity-check-pill">
+                <input type="checkbox" name="amenity" value="Máy giặt">
+                <span>🧺 Máy giặt</span>
+              </label>
+              <label class="amenity-check-pill">
+                <input type="checkbox" name="amenity" value="Tủ lạnh">
+                <span>🧊 Tủ lạnh</span>
+              </label>
+              <label class="amenity-check-pill">
+                <input type="checkbox" name="amenity" value="Ban công">
+                <span>🌿 Ban công</span>
+              </label>
+              <label class="amenity-check-pill">
+                <input type="checkbox" name="amenity" value="Khóa vân tay">
+                <span>🔐 Khóa vân tay</span>
+              </label>
+              <label class="amenity-check-pill">
+                <input type="checkbox" name="amenity" value="Gác lửng">
+                <span>🪜 Gác lửng</span>
+              </label>
+            </div>
+
+            <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="filterVerified">
+                <label class="custom-control-label text-success font-weight-bold" for="filterVerified" style="text-transform:none;font-size:13.5px;">
+                  ✓ Chỉ chủ trọ đã xác thực
+                </label>
+              </div>
+              <button type="button" id="btnResetFilter" class="btn btn-sm btn-outline-secondary">Đặt lại</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Bố cục 2 cột: Danh sách Card & Bản đồ Leaflet -->
+      <div class="row">
+        <!-- Cột trái: Danh sách phòng -->
+        <div class="col-lg-7 order-2 order-lg-1">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap: 8px;">
+            <div>
+              <strong id="resultCountText" class="text-primary" style="font-size: 16px;">Đang tìm phòng...</strong>
+              <span id="radiusSummaryBadge" class="badge badge-info ml-2"></span>
+            </div>
+            <div class="d-flex align-items-center" style="gap: 6px;">
+              <span class="small font-weight-bold text-muted">Sắp xếp:</span>
+              <select id="sortOrderSelect" class="form-control form-control-sm" style="width: auto;">
+                <option value="DISTANCE_ASC">Gần trường nhất</option>
+                <option value="PRICE_ASC">Giá thấp đến cao</option>
+                <option value="PRICE_DESC">Giá cao đến thấp</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" id="searchResultsContainer">
+            <!-- Render động danh sách card -->
+          </div>
+        </div>
+
+        <!-- Cột phải: Bản đồ Leaflet bán kính quanh trường -->
+        <div class="col-lg-5 order-1 order-lg-2 mb-4">
+          <div class="map-sticky-box">
+            <div class="map-legend-bar">
+              <span>🎓 Cam: Trường ĐH</span>
+              <span>🟢 Xanh lá: Đã xác thực</span>
+              <span>🔵 Xanh dương: Phòng thường</span>
+            </div>
+            <div id="searchMap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <section class="info_section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="info_contact">
+            <h5>Trọ Thông Minh</h5>
+            <div>
+              <div class="img-box"><img src="images/location.png" width="18px" alt="Địa chỉ"></div>
+              <p>54 Nguyễn Lương Bằng, Liên Chiểu, Đà Nẵng</p>
+            </div>
+            <div>
+              <div class="img-box"><img src="images/phone.png" width="12px" alt="Điện thoại"></div>
+              <p>0236 3888 999</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="info_links">
+            <h5>Liên Kết Nhanh</h5>
+            <ul>
+              <li><a href="index.html">Trang chủ</a></li>
+              <li><a href="compare.html">So sánh chi phí</a></li>
+              <li><a href="landlord/post-room.html">Đăng tin phòng</a></li>
+              <li><a href="admin/review.html">Admin hậu kiểm</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="info_info">
+            <h5>Công Thức Haversine</h5>
+            <p>Khoảng cách từ phòng trọ tới cổng trường được tính tự động theo tọa độ GPS thực tế.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="text/javascript" src="js/api.js"></script>
+  <script type="text/javascript" src="js/map.js"></script>
+  <script type="text/javascript" src="js/auth.js"></script>
+  <script type="text/javascript" src="js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var filterUni = document.getElementById("filterUni");
+      var filterRadius = document.getElementById("filterRadius");
+      var filterPrice = document.getElementById("filterPrice");
+      var filterArea = document.getElementById("filterArea");
+      var filterType = document.getElementById("filterType");
+      var filterVerified = document.getElementById("filterVerified");
+      var sortOrderSelect = document.getElementById("sortOrderSelect");
+      var resultsContainer = document.getElementById("searchResultsContainer");
+
+      window.SmartTroMap.initSearchMap("searchMap");
+
+      // Đọc tham số từ URL nếu chuyển từ trang chủ sang
+      var params = new URLSearchParams(window.location.search);
+      var initialUni = params.get("uni") || "uni-bk";
+      var initialRadius = params.get("radius") || "5";
+      var initialType = params.get("type") || "ALL";
+
+      window.SmartTroAPI.getUniversities().then(function (unis) {
+        filterUni.innerHTML = unis.map(function (u) {
+          return '<option value="' + u.id + '">' + u.name + '</option>';
+        }).join("");
+
+        filterUni.value = initialUni;
+        filterRadius.value = initialRadius;
+        if (initialType) filterType.value = initialType;
+
+        runSearch();
+      });
+
+      function getSelectedAmenities() {
+        var checked = document.querySelectorAll('input[name="amenity"]:checked');
+        var arr = [];
+        checked.forEach(function (el) { arr.push(el.value); });
+        return arr;
+      }
+
+      function runSearch() {
+        var uniId = filterUni.value;
+        var radiusKm = Number(filterRadius.value);
+        var filters = {
+          priceRange: filterPrice.value,
+          areaRange: filterArea.value,
+          type: filterType.value,
+          verifiedOnly: filterVerified.checked,
+          amenities: getSelectedAmenities()
+        };
+
+        window.SmartTroAPI.searchByRadius(uniId, radiusKm, filters).then(function (res) {
+          var rooms = res.rooms.slice();
+          var sortMode = sortOrderSelect.value;
+          if (sortMode === "PRICE_ASC") {
+            rooms.sort(function (a, b) { return a.price - b.price; });
+          } else if (sortMode === "PRICE_DESC") {
+            rooms.sort(function (a, b) { return b.price - a.price; });
+          } else {
+            rooms.sort(function (a, b) { return a.distanceKm - b.distanceKm; });
+          }
+
+          document.getElementById("resultCountText").textContent =
+            "Tìm thấy " + rooms.length + " phòng phù hợp";
+          document.getElementById("radiusSummaryBadge").textContent =
+            radiusKm > 0
+              ? "Bán kính " + radiusKm + " km quanh " + res.university.shortName
+              : "Toàn khu vực Đà Nẵng";
+
+          if (rooms.length === 0) {
+            resultsContainer.innerHTML =
+              '<div class="col-12"><div class="alert alert-warning">' +
+              'Không có phòng nào trong bán kính <strong>' + radiusKm + ' km</strong> thỏa bộ lọc hiện tại. ' +
+              'Hãy thử mở rộng bán kính lên <strong>5 km</strong> hoặc chọn <strong>Tất cả Đà Nẵng</strong>.' +
+              '</div></div>';
+          } else {
+            resultsContainer.innerHTML = rooms.map(function (room) {
+              return window.SmartTroAPI.renderRoomCard(room, "col-md-6 mb-4");
+            }).join("");
+
+            // Khi di chuột vào card phòng -> nổi bật vị trí trên bản đồ
+            var cards = resultsContainer.querySelectorAll("[data-room-id]");
+            cards.forEach(function (card) {
+              card.addEventListener("mouseenter", function () {
+                var rId = Number(card.getAttribute("data-room-id"));
+                window.SmartTroMap.focusRoomMarker(rId);
+              });
+            });
+          }
+
+          window.SmartTroMap.updateSearchMap(res.university, radiusKm, rooms);
+        });
+      }
+
+      // Lắng nghe thay đổi trên tất cả bộ lọc
+      [filterUni, filterRadius, filterPrice, filterArea, filterType, filterVerified, sortOrderSelect].forEach(function (el) {
+        el.addEventListener("change", runSearch);
+      });
+      document.querySelectorAll('input[name="amenity"]').forEach(function (chk) {
+        chk.addEventListener("change", runSearch);
+      });
+
+      document.getElementById("btnResetFilter").addEventListener("click", function () {
+        filterRadius.value = "0";
+        filterPrice.value = "ALL";
+        filterArea.value = "ALL";
+        filterType.value = "ALL";
+        filterVerified.checked = false;
+        document.querySelectorAll('input[name="amenity"]').forEach(function (chk) {
+          chk.checked = false;
+        });
+        runSearch();
+      });
+    });
+  </script>
+</body>
+
+</html>

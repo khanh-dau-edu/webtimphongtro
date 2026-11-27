@@ -1,0 +1,65 @@
+[
+  {
+    "id": 101,
+    "roomId": 1,
+    "userName": "Minh Quân (SV ĐH Bách Khoa)",
+    "rating": 5,
+    "comment": "Phòng đúng như ảnh, đồng hồ điện nước riêng rõ ràng. Đi bộ 5 phút tới cổng trường Bách Khoa.",
+    "verifiedBooking": true,
+    "createdAt": "2026-11-10"
+  },
+  {
+    "id": 102,
+    "roomId": 1,
+    "userName": "Thanh Trúc (SV ĐH Sư Phạm)",
+    "rating": 5,
+    "comment": "Cô chủ dễ tính, khu trọ có khóa vân tay an ninh, wifi mạnh.",
+    "verifiedBooking": true,
+    "createdAt": "2026-11-14"
+  },
+  {
+    "id": 103,
+    "roomId": 2,
+    "userName": "Hoàng Long (SV ĐH Bách Khoa)",
+    "rating": 4,
+    "comment": "Gác lửng cao ráo, giá mềm cho sinh viên, hẻm rộng dễ đi.",
+    "verifiedBooking": true,
+    "createdAt": "2026-11-12"
+  },
+  {
+    "id": 104,
+    "roomId": 4,
+    "userName": "Ngọc Ánh (SV ĐH Kinh Tế)",
+    "rating": 5,
+    "comment": "Nội thất mới tinh, miễn phí wifi, gần chợ Bắc Mỹ An rất tiện.",
+    "verifiedBooking": true,
+    "createdAt": "2026-11-15"
+  },
+  {
+    "id": 105,
+    "roomId": 5,
+    "userName": "Quốc Đạt (SV ĐH Kinh Tế)",
+    "rating": 3,
+    "comment": "Phòng ổn nhưng giá điện 4.800đ/kWh hơi cao khi bật điều hòa mùa hè.",
+    "verifiedBooking": true,
+    "createdAt": "2026-11-16"
+  },
+  {
+    "id": 106,
+    "roomId": 6,
+    "userName": "Đức Huy (SV ĐH Duy Tân)",
+    "rating": 5,
+    "comment": "Giường tầng sạch sẽ, bao điện nước hợp lý, ngay trung tâm Hàm Nghi.",
+    "verifiedBooking": true,
+    "createdAt": "2026-11-17"
+  },
+  {
+    "id": 107,
+    "roomId": 7,
+    "userName": "Khánh Linh (SV ĐH Duy Tân)",
+    "rating": 5,
+    "comment": "Phòng rộng, ban công thoáng, chủ trọ minh bạch mọi khoản phí.",
+    "verifiedBooking": true,
+    "createdAt": "2026-11-18"
+  }
+]

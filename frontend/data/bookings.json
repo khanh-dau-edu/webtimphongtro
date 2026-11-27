@@ -1,0 +1,35 @@
+[
+  {
+    "id": "BK-1001",
+    "roomId": 1,
+    "roomTitle": "Studio Cửa Sổ Lớn Hòa Khánh",
+    "tenantName": "Nguyễn Minh Quân",
+    "phone": "0905111222",
+    "date": "2026-11-22",
+    "time": "09:30",
+    "note": "Mình muốn xem phòng tầng 2 có cửa sổ hướng Đông.",
+    "status": "Đã xác nhận"
+  },
+  {
+    "id": "BK-1002",
+    "roomId": 4,
+    "roomTitle": "Căn Hộ Mini Full Nội Thất Bắc Mỹ An",
+    "tenantName": "Trần Ngọc Ánh",
+    "phone": "0935222333",
+    "date": "2026-11-23",
+    "time": "15:00",
+    "note": "Đi cùng 1 bạn nữ ở ghép.",
+    "status": "Chờ xác nhận"
+  },
+  {
+    "id": "BK-1003",
+    "roomId": 2,
+    "roomTitle": "Phòng Gác Lửng Ngô Thì Nhậm",
+    "tenantName": "Lê Hoàng Long",
+    "phone": "0914333444",
+    "date": "2026-11-18",
+    "time": "10:00",
+    "note": "Xem phòng và hỏi hợp đồng 6 tháng.",
+    "status": "Đã hoàn thành"
+  }
+]

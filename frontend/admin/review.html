@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Admin Hậu Kiểm Tin Gắn Cờ & Duyệt eKYC - Trọ Thông Minh</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap"
+    rel="stylesheet">
+  <!-- Template styles -->
+  <link href="../css/style.css" rel="stylesheet" />
+  <link href="../css/responsive.css" rel="stylesheet" />
+  <link href="../css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="../index.html">
+            <img src="../images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Nội dung Admin Hậu Kiểm & Duyệt eKYC -->
+  <section class="layout_padding2">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 10px;">
+        <div class="heading_container">
+          <h2>Trung Tâm Hậu Kiểm & Duyệt eKYC</h2>
+        </div>
+        <button type="button" id="btnResetDemoFlagged" class="btn btn-sm btn-outline-secondary">
+          🔄 Khôi phục dữ liệu mẫu
+        </button>
+      </div>
+
+      <!-- Thẻ thống kê nhanh -->
+      <div class="row mb-3">
+        <div class="col-md-4 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white">
+            <div class="small text-muted font-weight-bold">🚩 TIN ĐANG BỊ GẮN CỜ</div>
+            <div class="h3 font-weight-bold text-danger mb-0" id="statFlaggedCount">0</div>
+          </div>
+        </div>
+        <div class="col-md-4 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white">
+            <div class="small text-muted font-weight-bold">🪪 HỒ SƠ eKYC CHỜ DUYỆT</div>
+            <div class="h3 font-weight-bold text-primary mb-0" id="statEkycCount">0</div>
+          </div>
+        </div>
+        <div class="col-md-4 col-12 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white">
+            <div class="small text-muted font-weight-bold">✅ ĐÃ XỬ LÝ TRONG PHIÊN</div>
+            <div class="h3 font-weight-bold text-success mb-0" id="statProcessedCount">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 Tab: Tin bị gắn cờ & Hồ sơ eKYC -->
+      <ul class="nav nav-pills mb-3" id="adminReviewTabs" role="tablist">
+        <li class="nav-item mr-2">
+          <a class="nav-link active font-weight-bold" id="tab-flagged-btn" data-toggle="pill" href="#tabFlagged"
+            role="tab">
+            🚩 Tin Đăng Bị Gắn Cờ (Ảnh trùng / Lệch giá / Từ khóa)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link font-weight-bold" id="tab-ekyc-btn" data-toggle="pill" href="#tabEkyc" role="tab">
+            🪪 Duyệt Hồ Sơ eKYC Chủ Trọ
+          </a>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- TAB 1: Danh sách tin bị gắn cờ -->
+        <div class="tab-pane fade show active" id="tabFlagged" role="tabpanel">
+          <div id="flaggedListContainer"></div>
+        </div>
+
+        <!-- TAB 2: Duyệt hồ sơ eKYC -->
+        <div class="tab-pane fade" id="tabEkyc" role="tabpanel">
+          <div class="row" id="ekycListContainer"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng - Phân hệ Quản trị viên</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="../js/bootstrap.js"></script>
+  <script type="text/javascript" src="../js/api.js"></script>
+  <script type="text/javascript" src="../js/auth.js"></script>
+  <script type="text/javascript" src="../js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var fmt = window.SmartTroAPI.formatCurrency;
+
+      function loadAdminData() {
+        window.SmartTroAPI.getFlaggedData().then(function (data) {
+          var flaggedRooms = data.flaggedRooms || [];
+          var ekycRequests = data.ekycRequests || [];
+
+          var pendingFlags = flaggedRooms.filter(function (f) { return f.status === "FLAGGED"; }).length;
+          var pendingEkyc = ekycRequests.filter(function (e) { return e.status === "PENDING"; }).length;
+          var processed =
+            (flaggedRooms.length - pendingFlags) + (ekycRequests.length - pendingEkyc);
+
+          document.getElementById("statFlaggedCount").textContent = pendingFlags;
+          document.getElementById("statEkycCount").textContent = pendingEkyc;
+          document.getElementById("statProcessedCount").textContent = processed;
+
+          renderFlaggedRooms(flaggedRooms);
+          renderEkycRequests(ekycRequests);
+        });
+      }
+
+      function renderFlaggedRooms(list) {
+        var container = document.getElementById("flaggedListContainer");
+        if (!list.length) {
+          container.innerHTML = '<div class="alert alert-success">Không có tin đăng nào bị gắn cờ.</div>';
+          return;
+        }
+
+        container.innerHTML = list.map(function (item) {
+          var isPending = item.status === "FLAGGED";
+          var statusBadge = "";
+          if (item.status === "APPROVED") {
+            statusBadge = '<span class="badge badge-success p-2">✓ Đã duyệt (Chuyển ACTIVE)</span>';
+          } else if (item.status === "REJECTED") {
+            statusBadge = '<span class="badge badge-secondary p-2">✕ Đã từ chối & gỡ tin</span>';
+          } else {
+            statusBadge = '<span class="badge badge-danger p-2">🚩 Chờ hậu kiểm (Trust Score: ' + item.trustScore + '/100)</span>';
+          }
+
+          var reasonsHtml = (item.reasons || []).map(function (r) {
+            return '<span class="flag-reason-badge">⚠️ ' + r + '</span>';
+          }).join("");
+
+          var sp = item.servicePrices || {};
+          var checks = item.checks || {};
+
+          return (
+            '<div class="card border-0 shadow-sm mb-3 p-3">' +
+            '  <div class="row align-items-center">' +
+            '    <div class="col-md-3 mb-2 mb-md-0">' +
+            '      <img src="' + window.SmartTroAPI.resolveAsset(item.image) + '" class="w-100 rounded" style="height:140px;object-fit:cover;" alt="' + item.title + '">' +
+            '    </div>' +
+            '    <div class="col-md-6">' +
+            '      <div class="d-flex justify-content-between align-items-center flex-wrap mb-1">' +
+            '        <span class="small font-weight-bold text-muted">Mã: #' + item.id + ' • ' + (item.submittedAt || "") + '</span>' +
+            statusBadge +
+            '      </div>' +
+            '      <h5 class="font-weight-bold text-primary mb-1">' + item.title + '</h5>' +
+            '      <div class="small text-muted mb-2">📍 ' + item.address + ' • 👤 ' + item.landlordName + ' (' + item.landlordPhone + ')</div>' +
+            '      <div class="mb-2">' +
+            '        <span class="metric-pill price-pill mr-1">Giá thuê: ' + fmt(item.price) + ' (' + item.area + 'm²)</span>' +
+            '        <span class="metric-pill mr-1">⚡ Điện: ' + fmt(sp.electricity) + '/kWh</span>' +
+            '        <span class="metric-pill">💧 Nước: ' + fmt(sp.water) + '/m³</span>' +
+            '      </div>' +
+            '      <div class="mb-2">' + reasonsHtml + '</div>' +
+            '      <div class="small text-muted">' +
+            '        <strong>Chi tiết AI/Rule:</strong> ' +
+            (checks.pHash ? checks.pHash.detail : "") + ' | ' +
+            (checks.price ? checks.price.detail : "") +
+            '      </div>' +
+            '    </div>' +
+            '    <div class="col-md-3 text-md-right mt-3 mt-md-0">' +
+            (isPending
+              ? '<button type="button" class="btn btn-success btn-sm btn-block font-weight-bold mb-2" onclick="handleFlagAction(\'' + item.id + '\', \'APPROVED\')">✓ Duyệt tin (ACTIVE)</button>' +
+              '<button type="button" class="btn btn-outline-danger btn-sm btn-block font-weight-bold" onclick="handleFlagAction(\'' + item.id + '\', \'REJECTED\')">✕ Từ chối & Gỡ tin</button>'
+              : '<button type="button" class="btn btn-outline-secondary btn-sm btn-block" onclick="handleFlagAction(\'' + item.id + '\', \'FLAGGED\')">Hoàn tác trạng thái</button>') +
+            '    </div>' +
+            '  </div>' +
+            '</div>'
+          );
+        }).join("");
+      }
+
+      function renderEkycRequests(list) {
+        var container = document.getElementById("ekycListContainer");
+        container.innerHTML = list.map(function (req) {
+          var isPending = req.status === "PENDING";
+          var matchColor = req.faceMatchScore >= 85 ? "text-success" : "text-danger";
+
+          var statusHtml = "";
+          if (req.status === "APPROVED") {
+            statusHtml = '<span class="badge badge-success p-2">✓ Đã cấp tích xanh Chủ trọ xác thực</span>';
+          } else if (req.status === "REJECTED") {
+            statusHtml = '<span class="badge badge-danger p-2">✕ Đã từ chối hồ sơ</span>';
+          } else {
+            statusHtml = '<span class="badge badge-warning text-dark p-2">⏳ Chờ duyệt eKYC</span>';
+          }
+
+          return (
+            '<div class="col-lg-6 mb-3">' +
+            '  <div class="card border-0 shadow-sm p-3 h-100">' +
+            '    <div class="d-flex justify-content-between align-items-center mb-2">' +
+            '      <strong class="text-primary">Hồ sơ #' + req.id + '</strong>' +
+            statusHtml +
+            '    </div>' +
+            '    <h5 class="font-weight-bold mb-1">👤 ' + req.landlordName + '</h5>' +
+            '    <div class="small text-muted mb-2">📞 ' + req.phone + ' • 🏠 ' + req.address + '</div>' +
+            '    <div class="cccd-mock-card mb-3">' +
+            '      <div class="d-flex justify-content-between font-weight-bold mb-1">' +
+            '        <span>🪪 CCCD Gắn Chip: ' + req.cccdNumber + '</span>' +
+            '        <span class="' + matchColor + '">AI Face Match: ' + req.faceMatchScore + '%</span>' +
+            '      </div>' +
+            '      <div>• <strong>Kết quả OCR:</strong> ' + req.ocrStatus + '</div>' +
+            '      <div>• <strong>Giấy tờ nhà trọ:</strong> ' + req.propertyDoc + '</div>' +
+            '    </div>' +
+            '    <div class="d-flex mt-auto" style="gap: 8px;">' +
+            (isPending
+              ? '<button type="button" class="btn btn-success btn-sm font-weight-bold flex-fill" onclick="handleEkycAction(\'' + req.id + '\', \'APPROVED\')">✓ Duyệt eKYC</button>' +
+              '<button type="button" class="btn btn-outline-danger btn-sm font-weight-bold flex-fill" onclick="handleEkycAction(\'' + req.id + '\', \'REJECTED\')">✕ Từ chối</button>'
+              : '<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="handleEkycAction(\'' + req.id + '\', \'PENDING\')">Đặt lại chờ duyệt</button>') +
+            '    </div>' +
+            '  </div>' +
+            '</div>'
+          );
+        }).join("");
+      }
+
+      window.handleFlagAction = function (id, newStatus) {
+        window.SmartTroAPI.updateFlaggedStatus(id, newStatus).then(function () {
+          loadAdminData();
+          if (window.showToast) {
+            window.showToast(
+              newStatus === "APPROVED"
+                ? "Đã duyệt tin #" + id + " sang trạng thái ACTIVE!"
+                : "Đã cập nhật trạng thái tin #" + id
+            );
+          }
+        });
+      };
+
+      window.handleEkycAction = function (id, newStatus) {
+        window.SmartTroAPI.updateEkycStatus(id, newStatus).then(function () {
+          loadAdminData();
+          if (window.showToast) {
+            window.showToast(
+              newStatus === "APPROVED"
+                ? "Đã duyệt hồ sơ eKYC #" + id + " và cấp tích xanh Chủ trọ!"
+                : "Đã cập nhật hồ sơ eKYC #" + id
+            );
+          }
+        });
+      };
+
+      document.getElementById("btnResetDemoFlagged").addEventListener("click", function () {
+        localStorage.removeItem("smarttro_flagged_state");
+        loadAdminData();
+        if (window.showToast) window.showToast("Đã khôi phục dữ liệu hậu kiểm mẫu!");
+      });
+
+      loadAdminData();
+    });
+  </script>
+</body>
+
+</html>

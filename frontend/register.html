@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Đăng Ký Tài Khoản - Trọ Thông Minh Đà Nẵng</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Template styles (kế thừa contact_section từ contact.html) -->
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/responsive.css" rel="stylesheet" />
+  <link href="css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="index.html">
+            <img src="images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Contact Section Style cho trang Đăng ký -->
+  <section class="contact_section layout_padding-top">
+    <div class="container">
+      <div class="heading_container">
+        <h2>Đăng Ký Thành Viên</h2>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Cột trái: Bản đồ Leaflet Đà Nẵng -->
+        <div class="col-md-6 px-0">
+          <div class="map_container">
+            <div class="map-responsive">
+              <div id="authMap"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột phải: Form đăng ký chọn vai trò Khách thuê / Chủ trọ -->
+        <div class="col-lg-5 col-md-6">
+          <div class="form_container px-3">
+            <form id="registerForm">
+              <div class="mb-2">
+                <label class="small font-weight-bold text-warning d-block mb-2">Bạn đăng ký với vai trò:</label>
+                <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                  <label class="btn btn-warning active font-weight-bold w-50">
+                    <input type="radio" name="regRole" value="tenant" checked> 🎓 Khách thuê
+                  </label>
+                  <label class="btn btn-outline-light font-weight-bold w-50">
+                    <input type="radio" name="regRole" value="landlord"> 🏠 Chủ trọ
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <input type="text" id="regName" placeholder="Họ và tên đầy đủ *" required />
+              </div>
+              <div>
+                <input type="tel" id="regPhone" placeholder="Số điện thoại liên hệ *" required />
+              </div>
+              <div>
+                <input type="email" id="regEmail" placeholder="Địa chỉ Email *" required />
+              </div>
+              <div>
+                <input type="password" id="regPassword" placeholder="Mật khẩu (tối thiểu 6 ký tự) *" required />
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mt-4">
+                <a href="login.html" class="text-warning font-weight-bold small">Đã có tài khoản? Đăng nhập →</a>
+                <button type="submit" class="mt-0">Đăng ký ngay</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="text/javascript" src="js/api.js"></script>
+  <script type="text/javascript" src="js/map.js"></script>
+  <script type="text/javascript" src="js/auth.js"></script>
+  <script type="text/javascript" src="js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      window.SmartTroMap.initAuthMap("authMap");
+
+      document.getElementById("registerForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var selectedRoleEl = document.querySelector('input[name="regRole"]:checked');
+        var role = selectedRoleEl ? selectedRoleEl.value : "tenant";
+
+        var res = window.SmartTroAuth.register({
+          name: document.getElementById("regName").value,
+          phone: document.getElementById("regPhone").value,
+          email: document.getElementById("regEmail").value,
+          role: role
+        });
+        window.location.href = res.redirectUrl;
+      });
+    });
+  </script>
+</body>
+
+</html>

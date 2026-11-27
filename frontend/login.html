@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Đăng Nhập Hệ Thống - Trọ Thông Minh Đà Nẵng</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS (Thay iframe Google Maps của contact.html) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Template styles (kế thừa contact_section từ contact.html) -->
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/responsive.css" rel="stylesheet" />
+  <link href="css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="index.html">
+            <img src="images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Contact Section Style cho trang Đăng nhập -->
+  <section class="contact_section layout_padding-top">
+    <div class="container">
+      <div class="heading_container">
+        <h2>Đăng Nhập Tài Khoản</h2>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Cột trái: Bản đồ Leaflet các trường ĐH Đà Nẵng (thay Google Maps iframe) -->
+        <div class="col-md-6 px-0">
+          <div class="map_container">
+            <div class="map-responsive">
+              <div id="authMap"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột phải: Form đăng nhập giả lập lưu sessionStorage -->
+        <div class="col-lg-5 col-md-6">
+          <div class="form_container px-3">
+            <!-- Nút đăng nhập nhanh 1 chạm cho 3 vai trò -->
+            <div class="mb-3 p-3 rounded" style="background: rgba(255,255,255,0.12);">
+              <div class="small font-weight-bold text-warning mb-2">⚡ ĐĂNG NHẬP NHANH (DEMO 1 CHẠM):</div>
+              <div class="d-flex flex-wrap" style="gap: 8px;">
+                <button type="button" class="btn btn-sm btn-light font-weight-bold text-primary m-0" onclick="quickDemoLogin('tenant')">
+                  🎓 Khách thuê
+                </button>
+                <button type="button" class="btn btn-sm btn-warning font-weight-bold text-dark m-0" onclick="quickDemoLogin('landlord')">
+                  🏠 Chủ trọ (Đăng tin)
+                </button>
+                <button type="button" class="btn btn-sm btn-danger font-weight-bold m-0" onclick="quickDemoLogin('admin')">
+                  🛡️ Admin (Hậu kiểm)
+                </button>
+              </div>
+            </div>
+
+            <form id="loginForm">
+              <div>
+                <input type="email" id="loginEmail" placeholder="Email hoặc Số điện thoại" value="sinhvien@dut.udn.vn" required />
+              </div>
+              <div>
+                <input type="password" id="loginPassword" placeholder="Mật khẩu" value="123456" required />
+              </div>
+              <div class="mt-3">
+                <label class="small font-weight-bold text-warning">Chọn vai trò đăng nhập:</label>
+                <select id="loginRole" class="form-control">
+                  <option value="tenant">🎓 Khách thuê / Sinh viên (Chuyển tới Tìm phòng)</option>
+                  <option value="landlord">🏠 Chủ trọ (Chuyển tới Đăng tin & Kiểm duyệt)</option>
+                  <option value="admin">🛡️ Quản trị viên (Chuyển tới Admin Hậu kiểm & eKYC)</option>
+                </select>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-4">
+                <a href="register.html" class="text-warning font-weight-bold small">Chưa có tài khoản? Đăng ký ngay →</a>
+                <button type="submit" class="mt-0">Đăng nhập</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="text/javascript" src="js/api.js"></script>
+  <script type="text/javascript" src="js/map.js"></script>
+  <script type="text/javascript" src="js/auth.js"></script>
+  <script type="text/javascript" src="js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      window.SmartTroMap.initAuthMap("authMap");
+
+      document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var email = document.getElementById("loginEmail").value;
+        var pass = document.getElementById("loginPassword").value;
+        var role = document.getElementById("loginRole").value;
+        var res = window.SmartTroAuth.login(email, pass, role);
+        window.location.href = res.redirectUrl;
+      });
+    });
+
+    window.quickDemoLogin = function (role) {
+      var res = window.SmartTroAuth.login(role + "@trothongminh.vn", "123456", role);
+      window.location.href = res.redirectUrl;
+    };
+  </script>
+</body>
+
+</html>

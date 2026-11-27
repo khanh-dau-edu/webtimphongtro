@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>So Sánh Tổng Chi Phí 2-3 Phòng Trọ - Trọ Thông Minh</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Template styles (kế thừa price_section từ price.html) -->
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/responsive.css" rel="stylesheet" />
+  <link href="css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="index.html">
+            <img src="images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Price Section (Tái sử dụng giao diện price.html của template để so sánh 2-3 phòng) -->
+  <section class="price_section layout_padding2">
+    <div class="container">
+      <div class="heading_container mb-3">
+        <h2>So Sánh Tổng Chi Phí Thực Tế</h2>
+        <p class="text-muted mb-0">
+          Kéo thanh mức sử dụng điện/nước bên dưới để so sánh tổng số tiền thực trả hàng tháng giữa các phòng
+        </p>
+      </div>
+
+      <!-- Bảng điều chỉnh mức tiêu thụ chung cho cả 3 phòng -->
+      <div class="filter-panel mb-4">
+        <div class="row align-items-center">
+          <div class="col-md-3 col-6 mb-2">
+            <label>⚡ Điện: <strong id="cmpLblKwh" class="text-danger">120</strong> kWh/tháng</label>
+            <input type="range" id="cmpRangeKwh" class="w-100" min="0" max="300" step="10" value="120">
+          </div>
+          <div class="col-md-3 col-6 mb-2">
+            <label>💧 Nước: <strong id="cmpLblWater" class="text-primary">6</strong> m³/tháng</label>
+            <input type="range" id="cmpRangeWater" class="w-100" min="0" max="20" step="1" value="6">
+          </div>
+          <div class="col-md-3 col-6 mb-2">
+            <label>🛵 Số xe: <strong id="cmpLblBikes" class="text-dark">2</strong> xe</label>
+            <input type="range" id="cmpRangeBikes" class="w-100" min="0" max="4" step="1" value="2">
+          </div>
+          <div class="col-md-3 col-6 mb-2">
+            <label>👥 Số người ở: <strong id="cmpLblPeople" class="text-success">2</strong> người</label>
+            <input type="range" id="cmpRangePeople" class="w-100" min="1" max="4" step="1" value="2">
+          </div>
+        </div>
+
+        <!-- Chọn/đổi nhanh phòng ở từng cột so sánh -->
+        <div class="row pt-2 border-top mt-2" id="compareSlotSelectors"></div>
+      </div>
+
+      <!-- Khung 3 cột kế thừa .price_container .box của price.html -->
+      <div class="price_container" id="compareBoxesContainer">
+        <!-- Render động từ js/api.js & js/cost-calc.js -->
+      </div>
+    </div>
+  </section>
+  <!-- End Price Section -->
+
+  <!-- Footer -->
+  <section class="info_section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Mẹo Chọn Trọ Thông Minh</h5>
+          <p>Phòng có giá thuê rẻ hơn 200.000đ nhưng giá điện 4.800đ/kWh có thể khiến tổng chi phí thực tế mỗi tháng cao hơn!</p>
+        </div>
+        <div class="col-md-6 text-md-right">
+          <a href="search.html" class="btn btn-warning font-weight-bold">+ Tìm thêm phòng khác</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+  <script type="text/javascript" src="js/api.js"></script>
+  <script type="text/javascript" src="js/cost-calc.js"></script>
+  <script type="text/javascript" src="js/auth.js"></script>
+  <script type="text/javascript" src="js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var allRooms = [];
+      var fmt = window.SmartTroAPI.formatCurrency;
+
+      var rangeKwh = document.getElementById("cmpRangeKwh");
+      var rangeWater = document.getElementById("cmpRangeWater");
+      var rangeBikes = document.getElementById("cmpRangeBikes");
+      var rangePeople = document.getElementById("cmpRangePeople");
+
+      window.SmartTroAPI.getRooms().then(function (rooms) {
+        allRooms = rooms;
+        renderCompareView();
+      });
+
+      function renderCompareView() {
+        var compareIds = window.SmartTroAPI.getCompareIds();
+        if (compareIds.length < 2 && allRooms.length >= 3) {
+          compareIds = [allRooms[0].id, allRooms[3].id, allRooms[4].id];
+        }
+
+        var selectedRooms = compareIds.map(function (id) {
+          return allRooms.find(function (r) { return Number(r.id) === Number(id); }) || allRooms[0];
+        });
+
+        // Render ô chọn đổi phòng cho từng cột
+        var selectorsHtml = selectedRooms.map(function (selRoom, idx) {
+          var options = allRooms.map(function (r) {
+            return '<option value="' + r.id + '" ' + (Number(r.id) === Number(selRoom.id) ? "selected" : "") + '>' +
+              '#' + r.id + ' - ' + r.title + ' (' + window.SmartTroAPI.formatShortPrice(r.price) + ')' +
+            '</option>';
+          }).join("");
+          return (
+            '<div class="col-md-4 mb-2">' +
+            '  <label class="small font-weight-bold">Đổi phòng Cột 0' + (idx + 1) + ':</label>' +
+            '  <select class="form-control form-control-sm slot-room-select" data-slot="' + idx + '">' +
+                 options +
+            '  </select>' +
+            '</div>'
+          );
+        }).join("");
+        var slotContainer = document.getElementById("compareSlotSelectors");
+        slotContainer.innerHTML = selectorsHtml;
+
+        slotContainer.querySelectorAll(".slot-room-select").forEach(function (sel) {
+          sel.addEventListener("change", function () {
+            var slotIdx = Number(sel.getAttribute("data-slot"));
+            window.SmartTroAPI.replaceCompareSlot(slotIdx, Number(sel.value));
+            renderCompareView();
+          });
+        });
+
+        updateComparisonColumns(selectedRooms);
+      }
+
+      function updateComparisonColumns(selectedRooms) {
+        var usage = {
+          kwh: Number(rangeKwh.value),
+          waterM3: Number(rangeWater.value),
+          bikes: Number(rangeBikes.value),
+          people: Number(rangePeople.value)
+        };
+
+        document.getElementById("cmpLblKwh").textContent = usage.kwh;
+        document.getElementById("cmpLblWater").textContent = usage.waterM3;
+        document.getElementById("cmpLblBikes").textContent = usage.bikes;
+        document.getElementById("cmpLblPeople").textContent = usage.people;
+
+        // Tính chi phí từng phòng và tìm phòng có tổng chi phí thực tế thấp nhất
+        var calculated = selectedRooms.map(function (room) {
+          return {
+            room: room,
+            cost: window.SmartTroCostCalc.calculateMonthlyCost(room, usage)
+          };
+        });
+
+        var minTotal = Math.min.apply(null, calculated.map(function (c) { return c.cost.totalMonthly; }));
+
+        var boxesHtml = calculated.map(function (item, index) {
+          var r = item.room;
+          var c = item.cost;
+          var sp = r.servicePrices || {};
+          var isWinner = c.totalMonthly === minTotal;
+
+          return (
+            '<div class="box ' + (isWinner ? "compare-winner" : "") + '" style="margin-top:20px;">' +
+            '  <div class="detail-box">' +
+            (isWinner ? '<div class="winner-ribbon">🏆 Tổng chi phí tối ưu nhất</div>' : "") +
+            '    <div class="heading-box">' +
+            '      <h4>0' + (index + 1) + '</h4>' +
+            '      <h6 class="px-2">' + r.title + '</h6>' +
+            '      <span class="badge ' + (r.verified ? "badge-success" : "badge-secondary") + '">' +
+                     (r.verified ? "✓ Chủ trọ xác thực" : "Chưa xác thực") +
+            '      </span>' +
+            '    </div>' +
+            '    <img src="' + window.SmartTroAPI.resolveAsset(r.image) + '" class="compare-room-thumb" alt="' + r.title + '">' +
+            '    <div class="text-box">' +
+            '      <div class="small text-warning text-uppercase font-weight-bold">Tổng thực tế / tháng</div>' +
+            '      <h2>' + fmt(c.totalMonthly) + '</h2>' +
+            '      <ul>' +
+            '        <li><span>👤 Chia mỗi người:</span> <strong>' + fmt(c.perPerson) + '</strong></li>' +
+            '        <li><span>🏠 Giá thuê gốc:</span> <strong>' + fmt(c.baseRent) + '</strong></li>' +
+            '        <li><span>⚡ Tiền điện (' + usage.kwh + ' kWh):</span> <strong>' + fmt(c.electricityCost) +
+                       (sp.electricity > 4000 ? ' ⚠️' : '') + '</strong></li>' +
+            '        <li><span>💧 Tiền nước (' + usage.waterM3 + ' m³):</span> <strong>' + fmt(c.waterCost) +
+                       (sp.water > 20000 ? ' ⚠️' : '') + '</strong></li>' +
+            '        <li><span>📶 Wifi + Rác + Xe:</span> <strong>' + fmt(c.otherServicesCost) + '</strong></li>' +
+            '        <li><span>📐 Diện tích:</span> <strong>' + r.area + ' m² (' + r.type + ')</strong></li>' +
+            '        <li><span>📍 Khoảng cách:</span> <strong>' + r.distanceKm + ' km tới ' + r.refUniName + '</strong></li>' +
+            '      </ul>' +
+            (c.hasWarning
+              ? '<div class="badge badge-danger p-2 mt-2 w-100 text-wrap">⚠️ Đơn giá điện/nước cao</div>'
+              : '<div class="badge badge-success p-2 mt-2 w-100">✓ Đơn giá điện nước chuẩn</div>') +
+            '    </div>' +
+            '  </div>' +
+            '  <div class="btn-box mt-3">' +
+            '    <a href="room-detail.html?id=' + r.id + '">Xem chi tiết</a>' +
+            '  </div>' +
+            '</div>'
+          );
+        }).join("");
+
+        document.getElementById("compareBoxesContainer").innerHTML = boxesHtml;
+      }
+
+      [rangeKwh, rangeWater, rangeBikes, rangePeople].forEach(function (inp) {
+        inp.addEventListener("input", renderCompareView);
+      });
+    });
+  </script>
+</body>
+
+</html>

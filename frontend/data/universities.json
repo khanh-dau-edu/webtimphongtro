@@ -1,0 +1,56 @@
+[
+  {
+    "id": "uni-bk",
+    "name": "ĐH Bách Khoa - ĐH Đà Nẵng",
+    "shortName": "ĐH Bách Khoa",
+    "address": "54 Nguyễn Lương Bằng, Liên Chiểu, Đà Nẵng",
+    "district": "Liên Chiểu",
+    "lat": 16.0738,
+    "lng": 108.1499
+  },
+  {
+    "id": "uni-sp",
+    "name": "ĐH Sư Phạm - ĐH Đà Nẵng",
+    "shortName": "ĐH Sư Phạm",
+    "address": "459 Tôn Đức Thắng, Liên Chiểu, Đà Nẵng",
+    "district": "Liên Chiểu",
+    "lat": 16.0617,
+    "lng": 108.1591
+  },
+  {
+    "id": "uni-dt",
+    "name": "ĐH Duy Tân (Nguyễn Văn Linh)",
+    "shortName": "ĐH Duy Tân",
+    "address": "254 Nguyễn Văn Linh, Thanh Khê, Đà Nẵng",
+    "district": "Thanh Khê",
+    "lat": 16.0604,
+    "lng": 108.2144
+  },
+  {
+    "id": "uni-kt",
+    "name": "ĐH Kinh Tế - ĐH Đà Nẵng",
+    "shortName": "ĐH Kinh Tế",
+    "address": "71 Ngũ Hành Sơn, Ngũ Hành Sơn, Đà Nẵng",
+    "district": "Ngũ Hành Sơn",
+    "lat": 16.0472,
+    "lng": 108.2399
+  },
+  {
+    "id": "uni-nn",
+    "name": "ĐH Ngoại Ngữ - ĐH Đà Nẵng",
+    "shortName": "ĐH Ngoại Ngữ",
+    "address": "131 Lương Nhữ Học, Cẩm Lệ, Đà Nẵng",
+    "district": "Cẩm Lệ",
+    "lat": 16.0321,
+    "lng": 108.2212
+  },
+  {
+    "id": "uni-vku",
+    "name": "ĐH CNTT & TT Việt Hàn (VKU)",
+    "shortName": "ĐH Việt Hàn VKU",
+    "address": "470 Trần Đại Nghĩa, Ngũ Hành Sơn, Đà Nẵng",
+    "district": "Ngũ Hành Sơn",
+    "lat": 15.9752,
+    "lng": 108.2532
+  }
+]

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Chi Tiết Phòng Trọ & Tính Chi Phí Thực Tế - Trọ Thông Minh</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Template styles -->
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/responsive.css" rel="stylesheet" />
+  <link href="css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="index.html">
+            <img src="images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Nội dung Chi tiết phòng -->
+  <section class="layout_padding2">
+    <div class="container">
+      <!-- Thanh điều hướng & Đổi nhanh phòng mẫu để test cảnh báo giá điện -->
+      <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 10px;">
+        <a href="search.html" class="btn btn-sm btn-outline-primary font-weight-bold">← Quay lại tìm kiếm</a>
+        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+          <span class="small text-muted font-weight-bold">Chuyển nhanh phòng mẫu:</span>
+          <a href="room-detail.html?id=1" class="btn btn-sm btn-outline-success">Phòng #1 (Giá chuẩn)</a>
+          <a href="room-detail.html?id=5" class="btn btn-sm btn-outline-danger">Phòng #5 (Điện/Nước cao bất thường)</a>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Cột trái: Thư viện ảnh, thông tin cốt lõi, bản đồ, đánh giá -->
+        <div class="col-lg-7 mb-4">
+          <!-- Thư viện ảnh -->
+          <div class="gallery-main-wrap">
+            <img id="mainRoomImage" src="images/s-2.jpg" alt="Ảnh phòng trọ">
+            <div id="detailVerifiedBadge"></div>
+            <span id="detailRoomType" class="badge-room-type">Phòng trọ</span>
+          </div>
+          <div class="gallery-thumbs mb-3" id="galleryThumbsContainer"></div>
+
+          <!-- Tiêu đề & Chỉ số cốt lõi -->
+          <div class="card border-0 shadow-sm p-3 mb-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap: 10px;">
+              <div>
+                <h3 id="detailTitle" class="font-weight-bold text-primary mb-1">Đang tải...</h3>
+                <p id="detailAddress" class="text-muted small mb-2">📍 Đà Nẵng</p>
+              </div>
+              <div class="text-right">
+                <div id="detailPrice" class="h4 font-weight-bold text-danger mb-0">0 đ/tháng</div>
+                <span class="badge badge-success">Còn phòng</span>
+              </div>
+            </div>
+
+            <div class="room-core-metrics mt-2 mb-3">
+              <span class="metric-pill" id="detailArea">📐 24 m²</span>
+              <span class="metric-pill distance-pill" id="detailDistance">📍 0.5 km tới trường</span>
+              <span class="metric-pill" id="detailLandlord">👤 Chủ trọ</span>
+              <span class="metric-pill" id="detailTrust">🛡️ Trust Score: 95/100</span>
+            </div>
+
+            <!-- Tiện ích -->
+            <h6 class="font-weight-bold text-dark mb-2">Tiện ích có sẵn</h6>
+            <div id="detailAmenities" class="d-flex flex-wrap mb-3" style="gap: 6px;"></div>
+
+            <!-- Bảng đơn giá dịch vụ -->
+            <h6 class="font-weight-bold text-dark mb-2">Đơn giá dịch vụ niêm yết</h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered text-center mb-0">
+                <thead class="thead-light">
+                  <tr>
+                    <th>⚡ Điện</th>
+                    <th>💧 Nước</th>
+                    <th>📶 Wifi</th>
+                    <th>🗑️ Rác</th>
+                    <th>🛵 Gửi xe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr id="servicePriceRow" class="font-weight-bold"></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bản đồ vị trí phòng & trường ĐH gần nhất -->
+          <div class="card border-0 shadow-sm p-3 mb-4">
+            <h5 class="font-weight-bold text-primary mb-2">📍 Vị Trí & Khoảng Cách Tới Trường</h5>
+            <div id="detailMap"></div>
+          </div>
+
+          <!-- Đánh giá thật từ người đã xem phòng -->
+          <div class="card border-0 shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="font-weight-bold text-primary mb-0">⭐ Đánh Giá Từ Người Đã Xem</h5>
+              <span class="badge badge-success p-2">✓ Chỉ mở cho lịch hẹn hoàn tất</span>
+            </div>
+            <div id="reviewsListContainer"></div>
+          </div>
+        </div>
+
+        <!-- Cột phải: Công cụ tính Tổng chi phí thực tế & Nút hành động -->
+        <div class="col-lg-5">
+          <!-- Nút Đặt lịch, Lưu so sánh, Báo cáo vi phạm -->
+          <div class="card border-0 shadow-sm p-3 mb-4">
+            <div class="d-flex flex-wrap" style="gap: 8px;">
+              <button type="button" class="btn btn-warning font-weight-bold flex-fill" data-toggle="modal" data-target="#bookingModal">
+                📅 Đặt lịch xem phòng
+              </button>
+              <button type="button" id="btnDetailCompare" class="btn btn-outline-primary font-weight-bold">
+                + So sánh
+              </button>
+              <button type="button" class="btn btn-outline-danger font-weight-bold" data-toggle="modal" data-target="#reportModal">
+                🚩 Báo cáo vi phạm
+              </button>
+            </div>
+            <div id="bookingSuccessBanner" class="alert alert-success mt-3 mb-0 py-2 small" style="display:none;"></div>
+          </div>
+
+          <!-- Công cụ Tổng chi phí thực tế hàng tháng (js/cost-calc.js) -->
+          <div id="costCalculatorContainer" class="mb-4"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Đặt lịch xem phòng -->
+  <div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="bookingForm">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title font-weight-bold">📅 Đặt Lịch Xem Phòng</h5>
+            <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="font-weight-bold small">Phòng đăng ký xem</label>
+              <input type="text" id="bookingRoomTitle" class="form-control" readonly>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="font-weight-bold small">Ngày xem *</label>
+                <input type="date" id="bookingDate" class="form-control" required value="2026-11-25">
+              </div>
+              <div class="form-group col-6">
+                <label class="font-weight-bold small">Khung giờ *</label>
+                <select id="bookingTime" class="form-control" required>
+                  <option value="09:00">09:00 sáng</option>
+                  <option value="10:30">10:30 sáng</option>
+                  <option value="14:30">14:30 chiều</option>
+                  <option value="16:30">16:30 chiều</option>
+                  <option value="18:30">18:30 tối</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="font-weight-bold small">Họ và tên *</label>
+                <input type="text" id="bookingName" class="form-control" placeholder="Nguyễn Văn A" required>
+              </div>
+              <div class="form-group col-6">
+                <label class="font-weight-bold small">Số điện thoại *</label>
+                <input type="tel" id="bookingPhone" class="form-control" placeholder="0905xxxxxx" required>
+              </div>
+            </div>
+            <div class="form-group mb-0">
+              <label class="font-weight-bold small">Ghi chú cho chủ trọ</label>
+              <textarea id="bookingNote" class="form-control" rows="2" placeholder="Số người ở dự kiến, thời gian chuyển vào..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-warning font-weight-bold">Xác nhận đặt lịch</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Báo cáo vi phạm -->
+  <div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="reportForm">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title font-weight-bold">🚩 Báo Cáo Tin Vi Phạm</h5>
+            <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="font-weight-bold small">Lý do báo cáo *</label>
+              <select id="reportReason" class="form-control" required>
+                <option value="Ảnh không đúng thực tế">Ảnh không đúng thực tế</option>
+                <option value="Đơn giá điện/nước thực tế cao hơn tin đăng">Đơn giá điện/nước cao hơn tin đăng</option>
+                <option value="Yêu cầu chuyển khoản đặt cọc bất thường">Yêu cầu chuyển khoản đặt cọc bất thường</option>
+                <option value="Phòng đã cho thuê nhưng vẫn treo tin">Phòng đã cho thuê nhưng vẫn treo tin</option>
+              </select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="font-weight-bold small">Mô tả chi tiết *</label>
+              <textarea id="reportDetail" class="form-control" rows="3" placeholder="Nhập thông tin sai lệch để Admin hậu kiểm..." required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-danger font-weight-bold">Gửi báo cáo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <section class="info_section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="info_contact">
+            <h5>Trọ Thông Minh</h5>
+            <p>Nền tảng tìm phòng trọ sinh viên minh bạch tổng chi phí tại Đà Nẵng.</p>
+          </div>
+        </div>
+        <div class="col-md-6 text-md-right">
+          <a href="compare.html" class="btn btn-warning font-weight-bold">Chuyển tới trang So sánh phòng →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="text/javascript" src="js/api.js"></script>
+  <script type="text/javascript" src="js/map.js"></script>
+  <script type="text/javascript" src="js/cost-calc.js"></script>
+  <script type="text/javascript" src="js/auth.js"></script>
+  <script type="text/javascript" src="js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var params = new URLSearchParams(window.location.search);
+      var roomId = Number(params.get("id")) || 1;
+      var fmt = window.SmartTroAPI.formatCurrency;
+
+      Promise.all([
+        window.SmartTroAPI.getRoom(roomId),
+        window.SmartTroAPI.getUniversities(),
+        window.SmartTroAPI.getReviews(roomId)
+      ]).then(function (res) {
+        var room = res[0];
+        var universities = res[1];
+        var reviews = res[2];
+
+        // Thông tin chính
+        document.getElementById("detailTitle").textContent = room.title;
+        document.getElementById("detailAddress").textContent = "📍 " + room.address;
+        document.getElementById("detailPrice").textContent = fmt(room.price) + "/tháng";
+        document.getElementById("detailRoomType").textContent = room.type;
+        document.getElementById("detailArea").textContent = "📐 " + room.area + " m²";
+        document.getElementById("detailDistance").textContent =
+          "📍 Cách " + room.refUniName + ": " + room.distanceKm + " km";
+        document.getElementById("detailLandlord").textContent =
+          "👤 " + room.landlordName + " (" + room.landlordPhone + ")";
+        document.getElementById("detailTrust").textContent =
+          "🛡️ Trust Score: " + (room.trustScore || 90) + "/100";
+        document.getElementById("bookingRoomTitle").value =
+          room.title + " (" + fmt(room.price) + "/tháng)";
+
+        document.getElementById("detailVerifiedBadge").innerHTML = room.verified
+          ? '<span class="badge-verified">✓ Chủ trọ đã xác thực eKYC</span>'
+          : '<span class="badge-unverified">Chưa xác thực eKYC</span>';
+
+        // Thư viện ảnh
+        var imgs = room.images && room.images.length ? room.images : [room.image];
+        var mainImg = document.getElementById("mainRoomImage");
+        mainImg.src = window.SmartTroAPI.resolveAsset(imgs[0]);
+
+        var thumbsContainer = document.getElementById("galleryThumbsContainer");
+        thumbsContainer.innerHTML = imgs.map(function (imgPath, idx) {
+          var full = window.SmartTroAPI.resolveAsset(imgPath);
+          return '<img src="' + full + '" class="' + (idx === 0 ? "active" : "") + '" alt="Thumb ' + (idx + 1) + '">';
+        }).join("");
+
+        var thumbEls = thumbsContainer.querySelectorAll("img");
+        thumbEls.forEach(function (tEl) {
+          tEl.addEventListener("click", function () {
+            thumbEls.forEach(function (x) { x.classList.remove("active"); });
+            tEl.classList.add("active");
+            mainImg.src = tEl.src;
+          });
+        });
+
+        // Tiện ích
+        document.getElementById("detailAmenities").innerHTML = (room.amenities || []).map(function (am) {
+          return '<span class="badge badge-light border text-dark p-2">✓ ' + am + '</span>';
+        }).join("");
+
+        // Bảng đơn giá dịch vụ
+        var sp = room.servicePrices || {};
+        var elecHigh = sp.electricity > 4000;
+        var waterHigh = sp.water > 20000;
+        document.getElementById("servicePriceRow").innerHTML =
+          '<td class="' + (elecHigh ? "text-danger" : "text-success") + '">' +
+            fmt(sp.electricity) + '/kWh ' + (elecHigh ? "⚠️" : "") +
+          '</td>' +
+          '<td class="' + (waterHigh ? "text-danger" : "text-success") + '">' +
+            fmt(sp.water) + '/m³ ' + (waterHigh ? "⚠️" : "") +
+          '</td>' +
+          '<td>' + (sp.wifi === 0 ? "Miễn phí" : fmt(sp.wifi) + "/tháng") + '</td>' +
+          '<td>' + fmt(sp.trash) + '/tháng</td>' +
+          '<td>' + (sp.parking === 0 ? "Miễn phí" : fmt(sp.parking) + "/xe") + '</td>';
+
+        // Khởi tạo Công cụ tính tổng chi phí thực tế hàng tháng
+        window.SmartTroCostCalc.initRoomCalculator("costCalculatorContainer", room);
+
+        // Khởi tạo Bản đồ vị trí
+        var nearestUni = universities.find(function (u) { return u.id === room.refUniId; }) || universities[0];
+        window.SmartTroMap.initDetailMap("detailMap", room, nearestUni);
+
+        // Nút Lưu so sánh
+        var btnCompare = document.getElementById("btnDetailCompare");
+        var isCompared = window.SmartTroAPI.getCompareIds().indexOf(Number(room.id)) !== -1;
+        btnCompare.textContent = isCompared ? "✓ Đã lưu so sánh" : "+ So sánh";
+        btnCompare.addEventListener("click", function () {
+          window.handleCompareClick(room.id, btnCompare);
+        });
+
+        // Danh sách đánh giá
+        var revContainer = document.getElementById("reviewsListContainer");
+        if (!reviews.length) {
+          revContainer.innerHTML =
+            '<div class="text-muted small">Phòng mới đăng, chưa có đánh giá. Hãy đặt lịch xem phòng để trải nghiệm thực tế!</div>';
+        } else {
+          revContainer.innerHTML = reviews.map(function (rv) {
+            var stars = "★".repeat(rv.rating) + "☆".repeat(5 - rv.rating);
+            return (
+              '<div class="border-bottom pb-2 mb-2">' +
+              '  <div class="d-flex justify-content-between align-items-center">' +
+              '    <strong>' + rv.userName + ' <span class="badge badge-info ml-1">✓ Đã xem phòng</span></strong>' +
+              '    <span class="text-warning font-weight-bold">' + stars + '</span>' +
+              '  </div>' +
+              '  <p class="mb-1 small text-dark mt-1">' + rv.comment + '</p>' +
+              '  <small class="text-muted">Ngày đánh giá: ' + rv.createdAt + '</small>' +
+              '</div>'
+            );
+          }).join("");
+        }
+
+        // Xử lý Đặt lịch xem phòng
+        document.getElementById("bookingForm").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var bookingPayload = {
+            roomId: room.id,
+            roomTitle: room.title,
+            date: document.getElementById("bookingDate").value,
+            time: document.getElementById("bookingTime").value,
+            tenantName: document.getElementById("bookingName").value,
+            phone: document.getElementById("bookingPhone").value,
+            note: document.getElementById("bookingNote").value
+          };
+          window.SmartTroAPI.createBooking(bookingPayload).then(function (saved) {
+            $("#bookingModal").modal("hide");
+            var banner = document.getElementById("bookingSuccessBanner");
+            banner.style.display = "block";
+            banner.innerHTML =
+              "✓ <strong>Đặt lịch thành công!</strong> Mã hẹn: <strong>" + saved.id +
+              "</strong> vào lúc " + saved.time + " ngày " + saved.date + ".";
+            if (window.showToast) window.showToast("Đã gửi lịch hẹn xem phòng #" + saved.id);
+          });
+        });
+
+        // Xử lý Báo cáo vi phạm
+        document.getElementById("reportForm").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var reportPayload = {
+            roomId: room.id,
+            roomTitle: room.title,
+            reason: document.getElementById("reportReason").value,
+            detail: document.getElementById("reportDetail").value
+          };
+          window.SmartTroAPI.createReport(reportPayload).then(function () {
+            $("#reportModal").modal("hide");
+            document.getElementById("reportDetail").value = "";
+            if (window.showToast) {
+              window.showToast("Đã ghi nhận báo cáo vi phạm và chuyển sang Admin hậu kiểm!");
+            }
+          });
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>

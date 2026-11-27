@@ -1,0 +1,788 @@
+/* ==========================================================================
+   CSS TÙY CHỈNH - TÌM KIẾM PHÒNG TRỌ THÔNG MINH (ĐÀ NẴNG)
+   Giữ nguyên bộ khung, font Poppins/Raleway và bảng màu chủ đạo của template:
+   - Xanh đậm chủ đạo: #0f2480
+   - Xanh dương sáng: #3554d1
+   - Cam điểm nhấn: #f97616
+   - Vàng điểm nhấn: #f9bc16
+   ========================================================================== */
+
+:root {
+  --primary-navy: #0f2480;
+  --primary-blue: #3554d1;
+  --accent-orange: #f97616;
+  --accent-gold: #f9bc16;
+  --soft-bg: #f4f7fe;
+  --success-green: #16a34a;
+  --danger-red: #dc2626;
+  --warning-amber: #d97706;
+  --text-dark: #111827;
+  --text-muted: #6b7280;
+}
+
+/* --- Header & Menu điều hướng theo vai trò --- */
+.header_section {
+  background-color: rgba(15, 36, 128, 0.94);
+  box-shadow: 0 2px 12px rgba(15, 36, 128, 0.15);
+}
+
+.sub_page .header_section {
+  background-color: #0f2480;
+}
+
+.custom_nav-container {
+  height: auto;
+  min-height: 76px;
+  padding: 10px 0;
+}
+
+.navbar-brand img.brand-logo-svg {
+  width: 205px;
+  height: auto;
+}
+
+.desktop-nav-links {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0 auto 0 25px;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.desktop-nav-links li {
+  margin: 0 4px;
+}
+
+.desktop-nav-links a {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 13px;
+  border-radius: 20px;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.desktop-nav-links a:hover,
+.desktop-nav-links a.active {
+  background-color: #f97616;
+  color: #ffffff;
+}
+
+.compare-count-badge {
+  background-color: #f9bc16;
+  color: #0f2480;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+}
+
+.User_option {
+  margin-right: 60px;
+  gap: 10px;
+}
+
+.User_option .btn-nav-auth {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.User_option .btn-nav-login {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #ffffff;
+}
+
+.User_option .btn-nav-login:hover {
+  background: #ffffff;
+  color: #0f2480;
+}
+
+.User_option .btn-nav-register {
+  background: #f97616;
+  color: #ffffff;
+}
+
+.User_option .btn-nav-register:hover {
+  background: #e0630b;
+  color: #ffffff;
+}
+
+.user-role-pill {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-role-pill .role-tag {
+  background: #f9bc16;
+  color: #0f2480;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.overlay {
+  z-index: 99998;
+  background-color: rgba(15, 36, 128, 0.96);
+}
+
+.overlay-content {
+  top: 18%;
+}
+
+/* --- Hero & Thanh tìm kiếm Trang chủ --- */
+.slider_section .detail-box {
+  background: rgba(255, 255, 255, 0.92);
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 36, 128, 0.08);
+}
+
+.slider_section .detail-box h1 {
+  font-size: 2.8rem;
+  line-height: 1.2;
+}
+
+.find_section form {
+  border-radius: 10px;
+  padding: 18px 28px;
+  border-top: 4px solid #f97616;
+}
+
+.find_section label.search-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f2480;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.find_section form .form-control {
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  height: 44px;
+  margin: 4px 0 8px 0;
+}
+
+.find_section form button {
+  border-radius: 6px;
+  font-weight: 700;
+  height: 44px;
+  margin-top: 22px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.find_section form button:hover {
+  background-color: #d95f08;
+}
+
+/* --- Card Phòng Trọ (Ít chữ - Thông tin cốt lõi) --- */
+.room-card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 36, 128, 0.08);
+  border: 1px solid #e5e7eb;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(15, 36, 128, 0.15);
+  border-color: #3554d1;
+}
+
+.room-card .img-wrap {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  background: #e9eefc;
+}
+
+.room-card .img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.room-card:hover .img-wrap img {
+  transform: scale(1.05);
+}
+
+.badge-verified {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-unverified {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(17, 24, 39, 0.72);
+  color: #f3f4f6;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 20px;
+}
+
+.badge-room-type {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: #0f2480;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.room-card .card-body-custom {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.room-card .room-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f2480;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-core-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.metric-pill {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: #f4f7fe;
+  color: #1f2937;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metric-pill.price-pill {
+  background: #fff3e8;
+  color: #d95f08;
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.metric-pill.distance-pill {
+  background: #eef2ff;
+  color: #0f2480;
+}
+
+.room-card-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-view-room {
+  flex: 1;
+  background: #3554d1;
+  color: #ffffff !important;
+  text-align: center;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13.5px;
+  transition: background 0.2s;
+}
+
+.btn-view-room:hover {
+  background: #0f2480;
+}
+
+.btn-compare-toggle {
+  background: #f4f7fe;
+  color: #0f2480;
+  border: 1px solid #cbd5e1;
+  padding: 7px 11px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-compare-toggle:hover,
+.btn-compare-toggle.active {
+  background: #f9bc16;
+  border-color: #f9bc16;
+  color: #0f2480;
+}
+
+/* --- 3 Lợi Ích Trang Chủ --- */
+.benefit-box {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  padding: 28px 20px;
+  height: 100%;
+  transition: transform 0.2s;
+}
+
+.benefit-box:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.benefit-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f97616;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+}
+
+/* --- Trang Tìm Kiếm (search.html) --- */
+.filter-panel {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 4px 16px rgba(15, 36, 128, 0.07);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+.filter-panel label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f2480;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.amenity-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.amenity-check-pill {
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+}
+
+.amenity-check-pill input {
+  display: none;
+}
+
+.amenity-check-pill span {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s;
+}
+
+.amenity-check-pill input:checked + span {
+  background: #3554d1;
+  color: #ffffff;
+  border-color: #3554d1;
+}
+
+.map-sticky-box {
+  position: sticky;
+  top: 15px;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(15, 36, 128, 0.08);
+}
+
+#searchMap {
+  width: 100%;
+  height: 540px;
+  z-index: 1;
+}
+
+.map-legend-bar {
+  background: #0f2480;
+  color: #ffffff;
+  padding: 8px 14px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Custom Leaflet Markers */
+.custom-map-marker {
+  background: #3554d1;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 3px 7px;
+  border-radius: 12px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.custom-map-marker.verified-marker {
+  background: #16a34a;
+}
+
+.custom-map-marker.uni-marker {
+  background: #f97616;
+  font-size: 12px;
+  padding: 4px 9px;
+}
+
+/* --- Trang Chi Tiết Phòng (room-detail.html) --- */
+.gallery-main-wrap {
+  position: relative;
+  height: 390px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e9eefc;
+  margin-bottom: 10px;
+}
+
+.gallery-main-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-thumbs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.gallery-thumbs img {
+  width: 85px;
+  height: 62px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  opacity: 0.75;
+  transition: all 0.2s;
+}
+
+.gallery-thumbs img.active,
+.gallery-thumbs img:hover {
+  border-color: #f97616;
+  opacity: 1;
+}
+
+.cost-calc-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px solid #3554d1;
+  box-shadow: 0 8px 25px rgba(53, 84, 209, 0.12);
+  overflow: hidden;
+}
+
+.cost-calc-header {
+  background: #0f2480;
+  color: #ffffff;
+  padding: 15px 20px;
+}
+
+.cost-calc-header h4 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.cost-calc-body {
+  padding: 18px 20px;
+}
+
+.slider-group {
+  margin-bottom: 14px;
+}
+
+.slider-group .slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.slider-group input[type="range"] {
+  width: 100%;
+  accent-color: #f97616;
+  cursor: pointer;
+}
+
+.cost-Warning-box {
+  background: #fef2f2;
+  border-left: 4px solid #dc2626;
+  color: #991b1b;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.cost-safe-box {
+  background: #f0fdf4;
+  border-left: 4px solid #16a34a;
+  color: #166534;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.cost-total-banner {
+  background: #f4f7fe;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  border: 1px dashed #3554d1;
+}
+
+.cost-total-banner .total-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f97616;
+}
+
+#detailMap,
+#pickerMap,
+#authMap {
+  width: 100%;
+  height: 300px;
+  border-radius: 10px;
+  z-index: 1;
+}
+
+#authMap {
+  height: 100%;
+  min-height: 430px;
+  border-radius: 0;
+}
+
+/* --- Trang So Sánh (compare.html - kế thừa .price_section) --- */
+.price_section .price_container .box.compare-winner .detail-box {
+  border: 3px solid #f9bc16;
+  position: relative;
+}
+
+.winner-ribbon {
+  background: #f9bc16;
+  color: #0f2480;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 12px;
+  text-transform: uppercase;
+}
+
+.compare-room-thumb {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.price_section .price_container .box .detail-box .text-box {
+  padding: 22px 18px;
+}
+
+.price_section .price_container .box .detail-box .text-box ul li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 7px 0;
+  font-size: 13.5px;
+}
+
+/* --- Trang Đăng Tin & Kiểm Duyệt Giả Lập (landlord/post-room.html) --- */
+.moderation-step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 10px;
+}
+
+.moderation-step-card.step-pass {
+  border-left: 4px solid #16a34a;
+  background: #f0fdf4;
+}
+
+.moderation-step-card.step-fail {
+  border-left: 4px solid #dc2626;
+  background: #fef2f2;
+}
+
+.trust-score-meter {
+  height: 14px;
+  border-radius: 10px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.trust-score-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+/* --- Trang Admin Hậu Kiểm & eKYC (admin/review.html) --- */
+.flag-reason-badge {
+  display: inline-block;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+  margin: 2px 4px 2px 0;
+}
+
+.cccd-mock-card {
+  background: linear-gradient(135deg, #e0f2fe 0%, #dcfce7 100%);
+  border: 1px solid #93c5fd;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+  color: #0f2480;
+}
+
+/* --- Toast thông báo nổi --- */
+#smarttroToast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100000;
+  background: #0f2480;
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border-left: 5px solid #f9bc16;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+  font-weight: 600;
+  display: none;
+}
+
+/* --- Responsive Mobile-First (360px, 768px, 1200px) --- */
+@media (max-width: 991px) {
+  .desktop-nav-links {
+    display: none;
+  }
+  .User_option {
+    display: flex !important;
+    margin-right: 52px;
+  }
+  #searchMap {
+    height: 360px;
+  }
+}
+
+@media (max-width: 767px) {
+  .navbar-brand img.brand-logo-svg {
+    width: 155px;
+  }
+  .User_option .user-name-text {
+    display: none;
+  }
+  .slider_section .detail-box h1 {
+    font-size: 2rem;
+  }
+  .find_section {
+    transform: translateY(0);
+    margin-top: 15px;
+    margin-bottom: 25px;
+  }
+  .find_section form {
+    padding: 15px;
+  }
+  .find_section form button {
+    margin-top: 10px;
+  }
+  .gallery-main-wrap {
+    height: 250px;
+  }
+}
+
+@media (max-width: 400px) {
+  .navbar-brand img.brand-logo-svg {
+    width: 135px;
+  }
+  .User_option {
+    margin-right: 45px;
+  }
+  .User_option .btn-nav-auth {
+    padding: 4px 9px;
+    font-size: 11.5px;
+  }
+  .room-card .img-wrap {
+    height: 175px;
+  }
+}

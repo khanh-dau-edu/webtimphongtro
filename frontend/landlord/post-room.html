@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Đăng Tin Phòng Trọ & Kiểm Duyệt Tự Động - Trọ Thông Minh</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Template styles -->
+  <link href="../css/style.css" rel="stylesheet" />
+  <link href="../css/responsive.css" rel="stylesheet" />
+  <link href="../css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="../index.html">
+            <img src="../images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Nội dung Đăng tin & Kiểm duyệt giả lập -->
+  <section class="layout_padding2">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 10px;">
+        <div class="heading_container">
+          <h2>Đăng Tin Phòng Trọ Mới</h2>
+        </div>
+        <!-- Nút nạp nhanh 2 kịch bản để kiểm thử luồng Kiểm duyệt giả lập -->
+        <div class="d-flex flex-wrap" style="gap: 8px;">
+          <button type="button" id="btnPresetValid" class="btn btn-sm btn-success font-weight-bold">
+            ✓ Nạp mẫu Hợp lệ (Duyệt ACTIVE)
+          </button>
+          <button type="button" id="btnPresetFlagged" class="btn btn-sm btn-danger font-weight-bold">
+            ⚠️ Nạp mẫu Vi phạm (Bị gắn cờ FLAGGED)
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Cột trái: Form đăng tin đầy đủ -->
+        <div class="col-lg-7 mb-4">
+          <div class="card border-0 shadow-sm p-3">
+            <form id="postRoomForm">
+              <h6 class="font-weight-bold text-primary border-bottom pb-2 mb-3">1. Thông Tin Cơ Bản</h6>
+              <div class="form-group">
+                <label class="small font-weight-bold">Tiêu đề tin đăng (≤ 8 từ) *</label>
+                <input type="text" id="postTitle" class="form-control" value="Phòng Studio Mới Xây Hòa Khánh Bắc" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label class="small font-weight-bold">Loại hình *</label>
+                  <select id="postType" class="form-control">
+                    <option value="Phòng trọ">Phòng trọ</option>
+                    <option value="Căn hộ mini" selected>Căn hộ mini</option>
+                    <option value="Ở ghép">Ở ghép</option>
+                    <option value="Nhà nguyên căn">Nhà nguyên căn</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-4">
+                  <label class="small font-weight-bold">Giá thuê / tháng (VNĐ) *</label>
+                  <input type="number" id="postPrice" class="form-control" value="2500000" step="100000" required>
+                </div>
+                <div class="form-group col-md-4">
+                  <label class="small font-weight-bold">Diện tích (m²) *</label>
+                  <input type="number" id="postArea" class="form-control" value="25" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-8">
+                  <label class="small font-weight-bold">Địa chỉ chi tiết tại Đà Nẵng *</label>
+                  <input type="text" id="postAddress" class="form-control" value="96 Nguyễn Lương Bằng, Hòa Khánh Bắc, Liên Chiểu" required>
+                </div>
+                <div class="form-group col-md-4">
+                  <label class="small font-weight-bold">Quận / Huyện *</label>
+                  <select id="postDistrict" class="form-control">
+                    <option value="Liên Chiểu">Liên Chiểu</option>
+                    <option value="Hải Châu">Hải Châu</option>
+                    <option value="Ngũ Hành Sơn">Ngũ Hành Sơn</option>
+                    <option value="Thanh Khê">Thanh Khê</option>
+                    <option value="Cẩm Lệ">Cẩm Lệ</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Chọn vị trí trên bản đồ Leaflet -->
+              <h6 class="font-weight-bold text-primary border-bottom pb-2 mt-2 mb-2">
+                2. Chọn Vị Trí Trên Bản Đồ (Click hoặc kéo Marker)
+              </h6>
+              <div id="pickerMap" class="mb-2"></div>
+              <div class="form-row">
+                <div class="form-group col-6 mb-2">
+                  <label class="small font-weight-bold">Vĩ độ (Lat)</label>
+                  <input type="text" id="postLat" class="form-control form-control-sm" value="16.0745" readonly>
+                </div>
+                <div class="form-group col-6 mb-2">
+                  <label class="small font-weight-bold">Kinh độ (Lng)</label>
+                  <input type="text" id="postLng" class="form-control form-control-sm" value="108.1488" readonly>
+                </div>
+              </div>
+
+              <!-- Bảng đơn giá dịch vụ -->
+              <h6 class="font-weight-bold text-primary border-bottom pb-2 mt-3 mb-3">
+                3. Bảng Đơn Giá Dịch Vụ Minh Bạch
+              </h6>
+              <div class="form-row">
+                <div class="form-group col-md-4 col-6">
+                  <label class="small font-weight-bold">⚡ Điện (đ/kWh) *</label>
+                  <input type="number" id="postElec" class="form-control" value="3500" required>
+                </div>
+                <div class="form-group col-md-4 col-6">
+                  <label class="small font-weight-bold">💧 Nước (đ/m³) *</label>
+                  <input type="number" id="postWater" class="form-control" value="15000" required>
+                </div>
+                <div class="form-group col-md-4 col-4">
+                  <label class="small font-weight-bold">📶 Wifi (đ/tháng)</label>
+                  <input type="number" id="postWifi" class="form-control" value="50000">
+                </div>
+                <div class="form-group col-md-6 col-4">
+                  <label class="small font-weight-bold">🗑️ Rác (đ/tháng)</label>
+                  <input type="number" id="postTrash" class="form-control" value="20000">
+                </div>
+                <div class="form-group col-md-6 col-4">
+                  <label class="small font-weight-bold">🛵 Gửi xe (đ/xe)</label>
+                  <input type="number" id="postParking" class="form-control" value="0">
+                </div>
+              </div>
+
+              <!-- Ảnh & Chế độ kiểm tra pHash / EXIF -->
+              <h6 class="font-weight-bold text-primary border-bottom pb-2 mt-2 mb-3">
+                4. Hình Ảnh & Tiện Ích
+              </h6>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label class="small font-weight-bold">Chọn ảnh phòng</label>
+                  <select id="postImage" class="form-control">
+                    <option value="images/s-2.jpg">Ảnh thật 1 - Phòng cửa sổ lớn (EXIF chuẩn)</option>
+                    <option value="images/s-3.jpg">Ảnh thật 2 - Phòng gác lửng (EXIF chuẩn)</option>
+                    <option value="images/d-1.jpg">Ảnh tải lại - Trùng mã pHash 94% với tin #4</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="small font-weight-bold">Trạng thái ảnh kiểm thử</label>
+                  <select id="postImageMode" class="form-control">
+                    <option value="ORIGINAL">Ảnh chụp gốc từ điện thoại (Có EXIF GPS)</option>
+                    <option value="DUPLICATE">Ảnh sao chép trên mạng (Trùng pHash + Mất EXIF)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="amenity-pills-wrap mb-3">
+                <label class="amenity-check-pill"><input type="checkbox" name="postAm" value="Điều hòa" checked><span>❄️ Điều hòa</span></label>
+                <label class="amenity-check-pill"><input type="checkbox" name="postAm" value="Nóng lạnh" checked><span>🚿 Nóng lạnh</span></label>
+                <label class="amenity-check-pill"><input type="checkbox" name="postAm" value="Máy giặt" checked><span>🧺 Máy giặt</span></label>
+                <label class="amenity-check-pill"><input type="checkbox" name="postAm" value="Tủ lạnh"><span>🧊 Tủ lạnh</span></label>
+                <label class="amenity-check-pill"><input type="checkbox" name="postAm" value="Khóa vân tay" checked><span>🔐 Khóa vân tay</span></label>
+                <label class="amenity-check-pill"><input type="checkbox" name="postAm" value="Giờ giấc tự do" checked><span>🕒 Giờ giấc tự do</span></label>
+              </div>
+
+              <button type="submit" class="btn btn-warning btn-block font-weight-bold py-2" style="font-size:16px;">
+                🚀 ĐĂNG TIN & CHẠY KIỂM DUYỆT TỰ ĐỘNG
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Cột phải: Kết quả Kiểm duyệt giả lập (AI & Rule Pipeline) -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm p-3 sticky-top" style="top: 15px;">
+            <h5 class="font-weight-bold text-primary mb-2">🛡️ Kết Quả Kiểm Duyệt Tự Động</h5>
+            <p class="small text-muted mb-3">
+              Hệ thống kiểm tra 4 bước (Từ khóa cấm, Trùng ảnh pHash, EXIF GPS, Giá bất thường) trước khi cho phép hiển thị.
+            </p>
+
+            <div id="moderationResultPanel">
+              <div class="alert alert-info small mb-0">
+                Điền thông tin bên trái và bấm <strong>"Đăng tin & Chạy kiểm duyệt tự động"</strong> (hoặc bấm 2 nút Nạp mẫu ở góc trên) để xem kết quả.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="../js/bootstrap.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="text/javascript" src="../js/api.js"></script>
+  <script type="text/javascript" src="../js/map.js"></script>
+  <script type="text/javascript" src="../js/auth.js"></script>
+  <script type="text/javascript" src="../js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var picker = window.SmartTroMap.initPickerMap("pickerMap", 16.0745, 108.1488, function (lat, lng) {
+        document.getElementById("postLat").value = lat;
+        document.getElementById("postLng").value = lng;
+      });
+
+      // Nút nạp mẫu Hợp lệ (ACTIVE)
+      document.getElementById("btnPresetValid").addEventListener("click", function () {
+        document.getElementById("postTitle").value = "Phòng Studio Cửa Sổ Thoáng Hòa Khánh";
+        document.getElementById("postPrice").value = "2500000";
+        document.getElementById("postArea").value = "25";
+        document.getElementById("postAddress").value = "96 Nguyễn Lương Bằng, Hòa Khánh Bắc, Liên Chiểu";
+        document.getElementById("postElec").value = "3500";
+        document.getElementById("postWater").value = "15000";
+        document.getElementById("postImage").value = "images/s-2.jpg";
+        document.getElementById("postImageMode").value = "ORIGINAL";
+        runModerationPipeline();
+      });
+
+      // Nút nạp mẫu Vi phạm (FLAGGED)
+      document.getElementById("btnPresetFlagged").addEventListener("click", function () {
+        document.getElementById("postTitle").value = "Phòng Giá Sốc Cọc Giữ Chỗ Gấp";
+        document.getElementById("postPrice").value = "950000";
+        document.getElementById("postArea").value = "30";
+        document.getElementById("postAddress").value = "12 Nguyễn Lương Bằng, Liên Chiểu";
+        document.getElementById("postElec").value = "5500";
+        document.getElementById("postWater").value = "30000";
+        document.getElementById("postImage").value = "images/d-1.jpg";
+        document.getElementById("postImageMode").value = "DUPLICATE";
+        runModerationPipeline();
+      });
+
+      document.getElementById("postRoomForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        runModerationPipeline();
+      });
+
+      function runModerationPipeline() {
+        var ams = [];
+        document.querySelectorAll('input[name="postAm"]:checked').forEach(function (el) {
+          ams.push(el.value);
+        });
+
+        var imgMode = document.getElementById("postImageMode").value;
+        var formData = {
+          title: document.getElementById("postTitle").value,
+          type: document.getElementById("postType").value,
+          price: Number(document.getElementById("postPrice").value),
+          area: Number(document.getElementById("postArea").value),
+          address: document.getElementById("postAddress").value,
+          district: document.getElementById("postDistrict").value,
+          lat: Number(document.getElementById("postLat").value),
+          lng: Number(document.getElementById("postLng").value),
+          electricity: Number(document.getElementById("postElec").value),
+          water: Number(document.getElementById("postWater").value),
+          wifi: Number(document.getElementById("postWifi").value),
+          trash: Number(document.getElementById("postTrash").value),
+          parking: Number(document.getElementById("postParking").value),
+          image: document.getElementById("postImage").value,
+          imageMode: imgMode,
+          exifMode: imgMode === "DUPLICATE" ? "MISSING" : "VALID",
+          amenities: ams
+        };
+
+        var result = window.SmartTroAPI.simulateModeration(formData);
+        renderModerationResult(result);
+      }
+
+      function renderStepRow(title, checkObj) {
+        var pass = checkObj.passed;
+        return (
+          '<div class="moderation-step-card ' + (pass ? "step-pass" : "step-fail") + '">' +
+          '  <div style="font-size:18px;">' + (pass ? "✅" : "❌") + '</div>' +
+          '  <div>' +
+          '    <div class="font-weight-bold small text-dark">' + title + '</div>' +
+          '    <div class="small ' + (pass ? "text-success" : "text-danger") + '">' + checkObj.detail + '</div>' +
+          '  </div>' +
+          '</div>'
+        );
+      }
+
+      function renderModerationResult(res) {
+        var isActive = res.status === "ACTIVE";
+        var scoreColor = res.trustScore >= 70 ? "#16a34a" : "#dc2626";
+
+        var html =
+          '<div class="p-3 rounded mb-3 text-center ' + (isActive ? "bg-success" : "bg-danger") + ' text-white">' +
+          '  <div class="small text-uppercase font-weight-bold">Trạng thái tin đăng</div>' +
+          '  <div class="h4 font-weight-bold mb-1">' +
+               (isActive ? "✓ ACTIVE (Hiển thị ngay)" : "🚩 FLAGGED (Chờ hậu kiểm)") +
+          '  </div>' +
+          '  <div class="small">' +
+               (isActive
+                 ? "Tin vượt qua 4 bước kiểm duyệt tự động"
+                 : "Tin đã bị chặn hiển thị và chuyển sang Admin hậu kiểm") +
+          '  </div>' +
+          '</div>' +
+
+          '<div class="mb-3">' +
+          '  <div class="d-flex justify-content-between small font-weight-bold mb-1">' +
+          '    <span>Điểm tin cậy (Trust Score)</span>' +
+          '    <span style="color:' + scoreColor + ';font-size:15px;">' + res.trustScore + ' / 100 điểm</span>' +
+          '  </div>' +
+          '  <div class="trust-score-meter">' +
+          '    <div class="trust-score-fill" style="width:' + res.trustScore + '%;background:' + scoreColor + ';"></div>' +
+          '  </div>' +
+          '</div>' +
+
+          renderStepRow("Bước 1: Quét từ khóa cấm (Blacklist NLP)", res.checks.keyword) +
+          renderStepRow("Bước 2: Kiểm tra trùng ảnh (Perceptual Hash - pHash)", res.checks.pHash) +
+          renderStepRow("Bước 3: Kiểm tra dữ liệu EXIF Camera & GPS", res.checks.exif) +
+          renderStepRow("Bước 4: Kiểm tra bất thường Giá thuê & Điện/Nước", res.checks.price) +
+
+          '<div class="mt-3 d-flex" style="gap: 8px;">' +
+            (isActive
+              ? '<a href="../search.html" class="btn btn-success btn-sm font-weight-bold flex-fill">Xem tin trên trang Tìm kiếm →</a>'
+              : '<a href="../admin/review.html" class="btn btn-danger btn-sm font-weight-bold flex-fill">Mở trang Admin Hậu kiểm để xử lý →</a>') +
+          '</div>';
+
+        document.getElementById("moderationResultPanel").innerHTML = html;
+        if (window.showToast) {
+          window.showToast("Kiểm duyệt hoàn tất: Trạng thái " + res.status + " (" + res.trustScore + " điểm)");
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

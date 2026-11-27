@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Trọ Thông Minh Đà Nẵng - Tìm Phòng Trọ</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- Google Fonts: Poppins & Raleway -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap"
+    rel="stylesheet">
+  <!-- Template styles -->
+  <link href="css/style.css" rel="stylesheet" />
+  <link href="css/responsive.css" rel="stylesheet" />
+  <!-- Custom styles -->
+  <link href="css/custom.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="hero_area">
+    <!-- Header Section -->
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="index.html">
+            <img src="images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <!-- JS auth.js sẽ tự động đồng bộ menu theo vai trò -->
+              <div class="User_option">
+                <a class="btn-nav-auth btn-nav-login" href="login.html">Đăng nhập</a>
+                <a class="btn-nav-auth btn-nav-register" href="register.html">Đăng ký</a>
+              </div>
+            </ul>
+
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content">
+                <a href="index.html">Trang chủ</a>
+                <a href="search.html">Tìm phòng</a>
+                <a href="compare.html">So sánh</a>
+                <a href="landlord/post-room.html">Đăng tin</a>
+                <a href="admin/review.html">Hậu kiểm</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <!-- End Header Section -->
+
+    <!-- Hero / Slider Section -->
+    <section class="slider_section">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-5 col-md-7 offset-md-1">
+            <div class="detail-box">
+              <h1>
+                <span>Tìm Trọ</span> <br>
+                Quanh Trường <br>
+              </h1>
+              <p class="text-dark font-weight-bold mb-3">
+                Bản đồ bán kính chuẩn Haversine • Tính trước tổng chi phí điện nước.
+              </p>
+              <div class="d-flex flex-wrap" style="gap: 8px;">
+                <span class="badge badge-success p-2">✓ Chủ trọ xác thực eKYC</span>
+                <span class="badge badge-primary p-2">⚡ Không phí ẩn</span>
+                <span class="badge badge-warning text-dark p-2">📍 Tọa độ thật Đà Nẵng</span>
+              </div>
+              <div class="btn-box mt-4">
+                <a href="search.html" class="mb-0">Khám phá bản đồ</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- End Hero Section -->
+  </div>
+
+  <!-- Ô tìm kiếm nhanh theo Trường & Bán kính -->
+  <section class="find_section">
+    <div class="container">
+      <form id="homeSearchForm">
+        <div class="form-row align-items-center">
+          <div class="col-md-5">
+            <label class="search-label" for="homeUniSelect">🎓 Chọn trường Đại học</label>
+            <select id="homeUniSelect" class="form-control">
+              <option value="uni-bk">ĐH Bách Khoa - ĐH Đà Nẵng</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="search-label" for="homeRadiusSelect">⭕ Bán kính quanh trường</label>
+            <select id="homeRadiusSelect" class="form-control">
+              <option value="1">Trong vòng 1 km</option>
+              <option value="2">Trong vòng 2 km</option>
+              <option value="3" selected>Trong vòng 3 km</option>
+              <option value="5">Trong vòng 5 km</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="search-label" for="homeTypeSelect">🏠 Loại hình</label>
+            <select id="homeTypeSelect" class="form-control">
+              <option value="ALL">Tất cả</option>
+              <option value="Phòng trọ">Phòng trọ</option>
+              <option value="Căn hộ mini">Căn hộ mini</option>
+              <option value="Ở ghép">Ở ghép</option>
+              <option value="Nhà nguyên căn">Nhà nguyên căn</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button type="submit">🔍 Tìm</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+  <!-- End Find Section -->
+
+  <!-- Phòng Trọ Nổi Bật -->
+  <section class="sale_section layout_padding-bottom">
+    <div class="container">
+      <div class="heading_container mb-4">
+        <h2>Phòng Trọ Nổi Bật</h2>
+        <p class="text-muted mb-0">Đã kiểm duyệt giá điện nước & vị trí thực tế quanh các trường Đại học Đà Nẵng</p>
+      </div>
+
+      <div class="row" id="featuredRoomsContainer">
+        <!-- Render động từ js/api.js -->
+      </div>
+
+      <div class="btn-box">
+        <a href="search.html">Xem tất cả phòng</a>
+      </div>
+    </div>
+  </section>
+  <!-- End Phòng Trọ Nổi Bật -->
+
+  <!-- 3 Lợi Ích Cốt Lõi -->
+  <section class="us_section layout_padding2">
+    <div class="container">
+      <div class="heading_container">
+        <h2>3 Lợi Ích Cốt Lõi</h2>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <div class="benefit-box text-center">
+            <div class="benefit-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+            </div>
+            <h4 class="font-weight-bold">Chủ Trọ Xác Thực</h4>
+            <p class="mb-0 small text-light">
+              Duyệt eKYC CCCD, kiểm tra trùng ảnh pHash & tọa độ EXIF chống tin ảo.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="benefit-box text-center">
+            <div class="benefit-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2">
+                <rect x="4" y="2" width="16" height="20" rx="2" />
+                <line x1="8" y1="6" x2="16" y2="6" />
+                <line x1="8" y1="10" x2="16" y2="10" />
+                <line x1="8" y1="14" x2="12" y2="14" />
+              </svg>
+            </div>
+            <h4 class="font-weight-bold">Tổng Chi Phí Minh Bạch</h4>
+            <p class="mb-0 small text-light">
+              Công cụ tính trước tiền điện, nước, gửi xe và cảnh báo đơn giá bất thường.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="benefit-box text-center">
+            <div class="benefit-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            </div>
+            <h4 class="font-weight-bold">Đánh Giá Thật</h4>
+            <p class="mb-0 small text-light">
+              Chỉ sinh viên đã đặt lịch và đến xem phòng thực tế mới được gửi đánh giá.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="btn-box">
+        <a href="compare.html">So sánh chi phí phòng</a>
+      </div>
+    </div>
+  </section>
+  <!-- End 3 Lợi Ích -->
+
+  <!-- Info Section (Footer chung) -->
+  <section class="info_section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="info_contact">
+            <h5>Trọ Thông Minh</h5>
+            <div>
+              <div class="img-box"><img src="images/location.png" width="18px" alt="Địa chỉ"></div>
+              <p>54 Nguyễn Lương Bằng, Liên Chiểu, Đà Nẵng</p>
+            </div>
+            <div>
+              <div class="img-box"><img src="images/phone.png" width="12px" alt="Điện thoại"></div>
+              <p>0236 3888 999</p>
+            </div>
+            <div>
+              <div class="img-box"><img src="images/mail.png" width="18px" alt="Email"></div>
+              <p>hotro@trothongminh.vn</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="info_links">
+            <h5>Liên Kết Nhanh</h5>
+            <ul>
+              <li><a href="search.html">Tìm phòng quanh trường</a></li>
+              <li><a href="compare.html">So sánh tổng chi phí</a></li>
+              <li><a href="landlord/post-room.html">Đăng tin cho thuê</a></li>
+              <li><a href="admin/review.html">Hậu kiểm & Duyệt eKYC</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="info_info">
+            <h5>Khu Vực Hỗ Trợ</h5>
+            <p>ĐH Bách Khoa • ĐH Sư Phạm • ĐH Kinh Tế • ĐH Duy Tân • ĐH Ngoại Ngữ • ĐH Việt Hàn (VKU)</p>
+            <div class="mt-3">
+              <a href="login.html" class="btn btn-sm btn-warning font-weight-bold mr-2">Đăng nhập</a>
+              <a href="register.html" class="btn btn-sm btn-outline-light">Đăng ký</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Section -->
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng - Nền tảng tìm kiếm phòng trọ minh bạch</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+  <script type="text/javascript" src="js/api.js"></script>
+  <script type="text/javascript" src="js/auth.js"></script>
+  <script type="text/javascript" src="js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var uniSelect = document.getElementById("homeUniSelect");
+      var featuredContainer = document.getElementById("featuredRoomsContainer");
+
+      // Nạp danh sách trường ĐH vào ô chọn
+      window.SmartTroAPI.getUniversities().then(function (unis) {
+        uniSelect.innerHTML = unis.map(function (u) {
+          return '<option value="' + u.id + '">' + u.name + '</option>';
+        }).join("");
+      });
+
+      // Nạp 6 phòng nổi bật
+      window.SmartTroAPI.getRooms().then(function (rooms) {
+        var featured = rooms.slice(0, 6);
+        featuredContainer.innerHTML = featured.map(function (room) {
+          return window.SmartTroAPI.renderRoomCard(room, "col-lg-4 col-md-6 mb-4");
+        }).join("");
+      });
+
+      // Xử lý submit form tìm kiếm trang chủ -> chuyển sang search.html
+      document.getElementById("homeSearchForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var uni = uniSelect.value;
+        var radius = document.getElementById("homeRadiusSelect").value;
+        var type = document.getElementById("homeTypeSelect").value;
+        var url = "search.html?uni=" + encodeURIComponent(uni) +
+          "&radius=" + encodeURIComponent(radius) +
+          "&type=" + encodeURIComponent(type);
+        window.location.href = url;
+      });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,140 @@
+{
+  "flaggedRooms": [
+    {
+      "id": "FL-201",
+      "title": "Studio Cao Cấp Giá Sốc Cọc Giữ Chỗ Gấp",
+      "address": "15 Nguyễn Lương Bằng, Hòa Khánh Bắc, Liên Chiểu",
+      "district": "Liên Chiểu",
+      "price": 1100000,
+      "area": 30,
+      "type": "Căn hộ mini",
+      "image": "images/d-1.jpg",
+      "landlordName": "Tài khoản: Hùng BĐS Đà Nẵng",
+      "landlordPhone": "0999888777",
+      "submittedAt": "2026-11-20 08:45",
+      "trustScore": 28,
+      "status": "FLAGGED",
+      "reasons": [
+        "Từ khóa cấm: \"cọc giữ chỗ gấp\"",
+        "Trùng ảnh pHash 94% với tin #4",
+        "Giá thuê thấp bất thường (-62% so với khu vực)"
+      ],
+      "checks": {
+        "keyword": { "passed": false, "detail": "Phát hiện cụm từ nhạy cảm: \"cọc giữ chỗ gấp\"" },
+        "pHash": { "passed": false, "detail": "Trùng khớp 94% mã pHash với phòng #4 (Bắc Mỹ An)" },
+        "exif": { "passed": false, "detail": "Ảnh tải từ mạng, không có EXIF GPS camera" },
+        "price": { "passed": false, "detail": "Giá 1.1tr/30m² thấp bất thường; Điện 5.500đ/kWh" }
+      },
+      "servicePrices": {
+        "electricity": 5500,
+        "water": 30000,
+        "wifi": 100000,
+        "trash": 30000,
+        "parking": 50000
+      }
+    },
+    {
+      "id": "FL-202",
+      "title": "Phòng Trọ Gần ĐH Kinh Tế Mới Tinh",
+      "address": "89 Châu Thị Vĩnh Tế, Mỹ An, Ngũ Hành Sơn",
+      "district": "Ngũ Hành Sơn",
+      "price": 2400000,
+      "area": 22,
+      "type": "Phòng trọ",
+      "image": "images/s-5.jpg",
+      "landlordName": "Lê Văn Tùng",
+      "landlordPhone": "0905121212",
+      "submittedAt": "2026-11-20 10:15",
+      "trustScore": 52,
+      "status": "FLAGGED",
+      "reasons": [
+        "Đơn giá điện cao bất thường (5.200đ/kWh)",
+        "Đơn giá nước cao bất thường (35.000đ/m³)"
+      ],
+      "checks": {
+        "keyword": { "passed": true, "detail": "Không chứa từ khóa vi phạm" },
+        "pHash": { "passed": true, "detail": "Ảnh gốc, độ tương đồng pHash < 18%" },
+        "exif": { "passed": true, "detail": "EXIF hợp lệ: iPhone 14, GPS Ngũ Hành Sơn" },
+        "price": { "passed": false, "detail": "Điện 5.200đ/kWh (> 4.000đ), Nước 35.000đ/m³ (> 20.000đ)" }
+      },
+      "servicePrices": {
+        "electricity": 5200,
+        "water": 35000,
+        "wifi": 80000,
+        "trash": 20000,
+        "parking": 50000
+      }
+    },
+    {
+      "id": "FL-203",
+      "title": "Căn Hộ Mini Hải Châu Chuyển Khoản Giữ Phòng",
+      "address": "102 Núi Thành, Hòa Thuận Đông, Hải Châu",
+      "district": "Hải Châu",
+      "price": 2000000,
+      "area": 35,
+      "type": "Căn hộ mini",
+      "image": "images/d-2.jpg",
+      "landlordName": "Trần Quốc Tuấn",
+      "landlordPhone": "0944555666",
+      "submittedAt": "2026-11-19 19:20",
+      "trustScore": 38,
+      "status": "FLAGGED",
+      "reasons": [
+        "Từ khóa cấm: \"chuyển khoản giữ phòng\"",
+        "Trùng ảnh pHash 89% với tin #5",
+        "Thiếu dữ liệu EXIF GPS"
+      ],
+      "checks": {
+        "keyword": { "passed": false, "detail": "Phát hiện từ khóa yêu cầu đặt cọc online" },
+        "pHash": { "passed": false, "detail": "Trùng 89% mã pHash với ảnh mẫu hệ thống" },
+        "exif": { "passed": false, "detail": "Metadata EXIF đã bị xóa qua phần mềm chỉnh sửa" },
+        "price": { "passed": true, "detail": "Đơn giá điện 3.800đ/kWh, nước 15.000đ/m³" }
+      },
+      "servicePrices": {
+        "electricity": 3800,
+        "water": 15000,
+        "wifi": 50000,
+        "trash": 20000,
+        "parking": 0
+      }
+    }
+  ],
+  "ekycRequests": [
+    {
+      "id": "EKYC-301",
+      "landlordName": "Nguyễn Thị Bích Ngọc",
+      "phone": "0905888111",
+      "cccdNumber": "048189004512",
+      "address": "68 Ngô Thì Nhậm, Hòa Khánh Nam, Liên Chiểu, Đà Nẵng",
+      "submittedAt": "2026-11-20 09:10",
+      "faceMatchScore": 96,
+      "ocrStatus": "Khớp 100% họ tên & số CCCD",
+      "propertyDoc": "Giấy chứng nhận QSDĐ & Đăng ký kinh doanh nhà trọ",
+      "status": "PENDING"
+    },
+    {
+      "id": "EKYC-302",
+      "landlordName": "Trương Văn Hoàng",
+      "phone": "0913777222",
+      "cccdNumber": "048085009183",
+      "address": "145 Lê Văn Hiến, Khuê Mỹ, Ngũ Hành Sơn, Đà Nẵng",
+      "submittedAt": "2026-11-20 11:05",
+      "faceMatchScore": 93,
+      "ocrStatus": "Khớp thông tin CCCD gắn chip",
+      "propertyDoc": "Hợp đồng ủy quyền cho thuê hợp pháp",
+      "status": "PENDING"
+    },
+    {
+      "id": "EKYC-303",
+      "landlordName": "Lê Minh Tâm",
+      "phone": "0978999000",
+      "cccdNumber": "048092001122",
+      "address": "22 Nguyễn Lương Bằng, Liên Chiểu, Đà Nẵng",
+      "submittedAt": "2026-11-19 16:40",
+      "faceMatchScore": 61,
+      "ocrStatus": "Ảnh CCCD mặt trước bị lóa góc, độ khớp khuôn mặt thấp",
+      "propertyDoc": "Chưa cung cấp giấy tờ nhà trọ",
+      "status": "PENDING"
+    }
+  ]
+}
