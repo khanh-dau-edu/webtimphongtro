@@ -56,6 +56,9 @@
         </div>
         <!-- Nút nạp nhanh 2 kịch bản để kiểm thử luồng Kiểm duyệt giả lập -->
         <div class="d-flex flex-wrap" style="gap: 8px;">
+          <a href="manage.html" class="btn btn-sm btn-outline-primary font-weight-bold">
+            ← Bảng quản lý phòng & lịch hẹn
+          </a>
           <button type="button" id="btnPresetValid" class="btn btn-sm btn-success font-weight-bold">
             ✓ Nạp mẫu Hợp lệ (Duyệt ACTIVE)
           </button>
@@ -178,6 +181,18 @@
                 </div>
               </div>
 
+              <!-- Tải ảnh thực tế từ máy tính / điện thoại -->
+              <div class="upload-preview-box mb-3">
+                <label class="small font-weight-bold text-primary d-block mb-1" for="postImageFile">
+                  📷 Hoặc tải ảnh phòng thực tế từ thiết bị của bạn (JPG/PNG):
+                </label>
+                <input type="file" id="postImageFile" accept="image/*" class="small">
+                <div id="uploadPreviewWrap" style="display:none;">
+                  <img id="uploadPreviewImg" src="" alt="Ảnh tải lên">
+                  <div class="small text-success font-weight-bold mt-1" id="uploadFileInfo"></div>
+                </div>
+              </div>
+
               <div class="amenity-pills-wrap mb-3">
                 <label class="amenity-check-pill"><input type="checkbox" name="postAm" value="Điều hòa" checked><span>❄️ Điều hòa</span></label>
                 <label class="amenity-check-pill"><input type="checkbox" name="postAm" value="Nóng lạnh" checked><span>🚿 Nóng lạnh</span></label>
@@ -234,8 +249,37 @@
         document.getElementById("postLng").value = lng;
       });
 
+      var uploadedDataUrl = null;
+      var uploadedFileName = null;
+
+      var fileInput = document.getElementById("postImageFile");
+      fileInput.addEventListener("change", function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (!file) {
+          uploadedDataUrl = null;
+          uploadedFileName = null;
+          document.getElementById("uploadPreviewWrap").style.display = "none";
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          uploadedDataUrl = ev.target.result;
+          uploadedFileName = file.name;
+          document.getElementById("uploadPreviewImg").src = uploadedDataUrl;
+          document.getElementById("uploadFileInfo").textContent =
+            "✓ Đã nạp tệp: " + file.name + " (" + Math.round(file.size / 1024) + " KB)";
+          document.getElementById("uploadPreviewWrap").style.display = "block";
+          document.getElementById("postImageMode").value = "ORIGINAL";
+        };
+        reader.readAsDataURL(file);
+      });
+
       // Nút nạp mẫu Hợp lệ (ACTIVE)
       document.getElementById("btnPresetValid").addEventListener("click", function () {
+        uploadedDataUrl = null;
+        uploadedFileName = null;
+        fileInput.value = "";
+        document.getElementById("uploadPreviewWrap").style.display = "none";
         document.getElementById("postTitle").value = "Phòng Studio Cửa Sổ Thoáng Hòa Khánh";
         document.getElementById("postPrice").value = "2500000";
         document.getElementById("postArea").value = "25";
@@ -249,6 +293,10 @@
 
       // Nút nạp mẫu Vi phạm (FLAGGED)
       document.getElementById("btnPresetFlagged").addEventListener("click", function () {
+        uploadedDataUrl = null;
+        uploadedFileName = null;
+        fileInput.value = "";
+        document.getElementById("uploadPreviewWrap").style.display = "none";
         document.getElementById("postTitle").value = "Phòng Giá Sốc Cọc Giữ Chỗ Gấp";
         document.getElementById("postPrice").value = "950000";
         document.getElementById("postArea").value = "30";
@@ -286,7 +334,9 @@
           wifi: Number(document.getElementById("postWifi").value),
           trash: Number(document.getElementById("postTrash").value),
           parking: Number(document.getElementById("postParking").value),
-          image: document.getElementById("postImage").value,
+          image: uploadedDataUrl || document.getElementById("postImage").value,
+          uploadedFile: Boolean(uploadedDataUrl),
+          uploadedFileName: uploadedFileName,
           imageMode: imgMode,
           exifMode: imgMode === "DUPLICATE" ? "MISSING" : "VALID",
           amenities: ams
@@ -341,10 +391,12 @@
           renderStepRow("Bước 3: Kiểm tra dữ liệu EXIF Camera & GPS", res.checks.exif) +
           renderStepRow("Bước 4: Kiểm tra bất thường Giá thuê & Điện/Nước", res.checks.price) +
 
-          '<div class="mt-3 d-flex" style="gap: 8px;">' +
+          '<div class="mt-3 d-flex flex-wrap" style="gap: 8px;">' +
             (isActive
-              ? '<a href="../search.html" class="btn btn-success btn-sm font-weight-bold flex-fill">Xem tin trên trang Tìm kiếm →</a>'
-              : '<a href="../admin/review.html" class="btn btn-danger btn-sm font-weight-bold flex-fill">Mở trang Admin Hậu kiểm để xử lý →</a>') +
+              ? '<a href="../search.html" class="btn btn-success btn-sm font-weight-bold flex-fill">Xem trên trang Tìm kiếm →</a>' +
+                '<a href="manage.html" class="btn btn-outline-primary btn-sm font-weight-bold flex-fill">Quản lý phòng của tôi →</a>'
+              : '<a href="manage.html" class="btn btn-outline-danger btn-sm font-weight-bold flex-fill">Xem trong Bảng Chủ trọ →</a>' +
+                '<a href="../admin/review.html" class="btn btn-danger btn-sm font-weight-bold flex-fill">Mở Admin Hậu kiểm →</a>') +
           '</div>';
 
         document.getElementById("moderationResultPanel").innerHTML = html;

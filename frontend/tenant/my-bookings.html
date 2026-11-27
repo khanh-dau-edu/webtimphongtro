@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Lịch Hẹn Xem Phòng & Đánh Giá Thực Tế - Trọ Thông Minh</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Template styles -->
+  <link href="../css/style.css" rel="stylesheet" />
+  <link href="../css/responsive.css" rel="stylesheet" />
+  <link href="../css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="../index.html">
+            <img src="../images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Nội dung Quản lý lịch hẹn & Đánh giá thực tế cho Khách thuê -->
+  <section class="layout_padding2">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 10px;">
+        <div>
+          <div class="heading_container">
+            <h2>Lịch Hẹn Xem Phòng & Đánh Giá Thật</h2>
+          </div>
+          <p class="text-muted small mb-0">
+            Chỉ những lịch hẹn đã đến xem phòng thực tế (trạng thái <strong>Đã hoàn thành</strong>) mới được mở quyền viết đánh giá.
+          </p>
+        </div>
+        <div class="d-flex flex-wrap" style="gap: 8px;">
+          <a href="../compare.html" class="btn btn-sm btn-outline-primary font-weight-bold">⚖️ Phòng đang so sánh</a>
+          <a href="../search.html" class="btn btn-sm btn-warning font-weight-bold">+ Tìm & Đặt lịch phòng mới</a>
+        </div>
+      </div>
+
+      <!-- Thống kê nhanh -->
+      <div class="row mb-3">
+        <div class="col-md-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">📅 TỔNG LỊCH HẸN</div>
+            <div class="h3 font-weight-bold text-primary mb-0" id="statTotalBk">0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">⏳ SẮP TỚI / CHỜ DUYỆT</div>
+            <div class="h3 font-weight-bold text-info mb-0" id="statUpcomingBk">0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">🏁 CHỜ VIẾT ĐÁNH GIÁ</div>
+            <div class="h3 font-weight-bold text-warning mb-0" id="statReadyReviewBk">0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">⭐ ĐÃ ĐÁNH GIÁ</div>
+            <div class="h3 font-weight-bold text-success mb-0" id="statReviewedBk">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thanh lọc theo trạng thái -->
+      <div class="filter-panel py-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+          <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+            <span class="small font-weight-bold text-dark">Lọc trạng thái:</span>
+            <select id="bookingStatusFilter" class="form-control form-control-sm" style="width: auto;">
+              <option value="ALL">Tất cả lịch hẹn</option>
+              <option value="Chờ xác nhận">Chờ xác nhận</option>
+              <option value="Đã xác nhận">Đã xác nhận</option>
+              <option value="Đã hoàn thành">Đã hoàn thành (Mở đánh giá)</option>
+              <option value="Đã hủy">Đã hủy</option>
+            </select>
+          </div>
+          <span class="small text-muted">Mẹo: Khi đi xem phòng xong, nhấn <strong>"Đã đến xem phòng"</strong> để gửi đánh giá giúp cộng đồng sinh viên!</span>
+        </div>
+      </div>
+
+      <!-- Danh sách lịch hẹn -->
+      <div id="tenantBookingsContainer"></div>
+    </div>
+  </section>
+
+  <!-- Modal Viết đánh giá thực tế -->
+  <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="verifiedReviewForm">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title font-weight-bold">⭐ Đánh Giá Thực Tế Sau Khi Xem Phòng</h5>
+            <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="rvBookingId">
+            <input type="hidden" id="rvRoomId">
+
+            <div class="form-group">
+              <label class="small font-weight-bold">Phòng đã xem thực tế</label>
+              <input type="text" id="rvRoomTitle" class="form-control" readonly>
+            </div>
+
+            <div class="form-group">
+              <label class="small font-weight-bold d-block">Mức độ hài lòng thực tế *</label>
+              <div class="star-rating-picker">
+                <input type="radio" id="rvStar5" name="rvRating" value="5" checked><label for="rvStar5" title="5 sao">★</label>
+                <input type="radio" id="rvStar4" name="rvRating" value="4"><label for="rvStar4" title="4 sao">★</label>
+                <input type="radio" id="rvStar3" name="rvRating" value="3"><label for="rvStar3" title="3 sao">★</label>
+                <input type="radio" id="rvStar2" name="rvRating" value="2"><label for="rvStar2" title="2 sao">★</label>
+                <input type="radio" id="rvStar1" name="rvRating" value="1"><label for="rvStar1" title="1 sao">★</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="small font-weight-bold">Tên hiển thị *</label>
+              <input type="text" id="rvUserName" class="form-control" required>
+            </div>
+
+            <div class="form-group mb-0">
+              <label class="small font-weight-bold">Nhận xét chi tiết (Ảnh thực tế, điện nước, an ninh, chủ trọ) *</label>
+              <textarea id="rvComment" class="form-control" rows="3" placeholder="Chia sẻ trải nghiệm thực tế sau buổi xem phòng..." required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-warning font-weight-bold">Đăng đánh giá xác thực</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng - Phân hệ Khách thuê</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="../js/bootstrap.js"></script>
+  <script type="text/javascript" src="../js/api.js"></script>
+  <script type="text/javascript" src="../js/auth.js"></script>
+  <script type="text/javascript" src="../js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var allBookings = [];
+      var statusFilterEl = document.getElementById("bookingStatusFilter");
+      var currentUser = window.SmartTroAuth.getCurrentUser();
+
+      function loadBookings() {
+        window.SmartTroAPI.getBookings().then(function (list) {
+          allBookings = list || [];
+          updateStats(allBookings);
+          renderList();
+        });
+      }
+
+      function updateStats(list) {
+        var total = list.length;
+        var upcoming = list.filter(function (b) {
+          return b.status === "Chờ xác nhận" || b.status === "Đã xác nhận";
+        }).length;
+        var readyReview = list.filter(function (b) {
+          return b.status === "Đã hoàn thành" && !b.reviewed;
+        }).length;
+        var reviewed = list.filter(function (b) {
+          return Boolean(b.reviewed);
+        }).length;
+
+        document.getElementById("statTotalBk").textContent = total;
+        document.getElementById("statUpcomingBk").textContent = upcoming;
+        document.getElementById("statReadyReviewBk").textContent = readyReview;
+        document.getElementById("statReviewedBk").textContent = reviewed;
+      }
+
+      function getStatusBadgeHtml(status) {
+        if (status === "Đã hoàn thành") {
+          return '<span class="badge badge-success p-2">🏁 Đã hoàn thành xem phòng</span>';
+        }
+        if (status === "Đã xác nhận") {
+          return '<span class="badge badge-primary p-2">✓ Chủ trọ đã xác nhận hẹn</span>';
+        }
+        if (status === "Đã hủy") {
+          return '<span class="badge badge-secondary p-2">✕ Đã hủy lịch hẹn</span>';
+        }
+        return '<span class="badge badge-warning text-dark p-2">⏳ Chờ chủ trọ xác nhận</span>';
+      }
+
+      function renderList() {
+        var filterVal = statusFilterEl.value;
+        var filtered = allBookings.filter(function (b) {
+          return filterVal === "ALL" ? true : b.status === filterVal;
+        });
+
+        var container = document.getElementById("tenantBookingsContainer");
+        if (!filtered.length) {
+          container.innerHTML =
+            '<div class="alert alert-info">Chưa có lịch hẹn nào khớp bộ lọc hiện tại. ' +
+            '<a href="../search.html" class="font-weight-bold">Khám phá bản đồ phòng trọ ngay →</a></div>';
+          return;
+        }
+
+        container.innerHTML = filtered.map(function (bk) {
+          var actionsHtml = "";
+          if (bk.status === "Đã hoàn thành") {
+            if (bk.reviewed) {
+              actionsHtml =
+                '<span class="btn btn-sm btn-outline-success disabled font-weight-bold mb-2 d-block">✓ Đã gửi đánh giá thực tế</span>' +
+                '<a href="../room-detail.html?id=' + bk.roomId + '" class="btn btn-sm btn-primary font-weight-bold d-block">Xem đánh giá trên trang phòng →</a>';
+            } else {
+              actionsHtml =
+                '<button type="button" class="btn btn-warning btn-sm btn-block font-weight-bold mb-2" onclick="openVerifiedReviewModal(\'' + bk.id + '\')">⭐ Viết đánh giá thực tế</button>' +
+                '<a href="../room-detail.html?id=' + bk.roomId + '" class="btn btn-outline-primary btn-sm btn-block">Xem lại thông tin phòng</a>';
+            }
+          } else if (bk.status === "Chờ xác nhận" || bk.status === "Đã xác nhận") {
+            actionsHtml =
+              '<button type="button" class="btn btn-success btn-sm btn-block font-weight-bold mb-2" onclick="markBookingVisited(\'' + bk.id + '\')">🏁 Xác nhận đã đến xem phòng</button>' +
+              '<button type="button" class="btn btn-outline-danger btn-sm btn-block" onclick="cancelTenantBooking(\'' + bk.id + '\')">✕ Hủy lịch hẹn</button>';
+          } else {
+            actionsHtml =
+              '<a href="../room-detail.html?id=' + bk.roomId + '" class="btn btn-outline-primary btn-sm btn-block">Đặt lại lịch khác →</a>';
+          }
+
+          return (
+            '<div class="card border-0 shadow-sm mb-3 p-3">' +
+            '  <div class="row align-items-center">' +
+            '    <div class="col-md-8">' +
+            '      <div class="d-flex justify-content-between align-items-center flex-wrap mb-2" style="gap:6px;">' +
+            '        <span class="small font-weight-bold text-muted">Mã lịch hẹn: #' + bk.id + '</span>' +
+            getStatusBadgeHtml(bk.status) +
+            '      </div>' +
+            '      <h5 class="font-weight-bold text-primary mb-1">' +
+            '        <a href="../room-detail.html?id=' + bk.roomId + '" class="text-primary">🏠 ' + (bk.roomTitle || ("Phòng #" + bk.roomId)) + '</a>' +
+            '      </h5>' +
+            '      <div class="mb-2">' +
+            '        <span class="metric-pill price-pill mr-1">📅 Ngày xem: ' + bk.date + ' lúc ' + bk.time + '</span>' +
+            '        <span class="metric-pill">👤 Người đặt: ' + bk.tenantName + ' (' + bk.phone + ')</span>' +
+            '      </div>' +
+            (bk.note ? '<div class="small text-muted">📝 Ghi chú: "' + bk.note + '"</div>' : '') +
+            '    </div>' +
+            '    <div class="col-md-4 mt-3 mt-md-0">' +
+            actionsHtml +
+            '    </div>' +
+            '  </div>' +
+            '</div>'
+          );
+        }).join("");
+      }
+
+      window.markBookingVisited = function (bookingId) {
+        window.SmartTroAPI.updateBookingStatus(bookingId, "Đã hoàn thành").then(function () {
+          loadBookings();
+          if (window.showToast) {
+            window.showToast("Lịch hẹn #" + bookingId + " đã hoàn tất! Bạn có thể gửi đánh giá thực tế ngay.");
+          }
+        });
+      };
+
+      window.cancelTenantBooking = function (bookingId) {
+        window.SmartTroAPI.updateBookingStatus(bookingId, "Đã hủy").then(function () {
+          loadBookings();
+          if (window.showToast) {
+            window.showToast("Đã hủy lịch hẹn #" + bookingId + ".");
+          }
+        });
+      };
+
+      window.openVerifiedReviewModal = function (bookingId) {
+        var bk = allBookings.find(function (b) { return String(b.id) === String(bookingId); });
+        if (!bk) return;
+        document.getElementById("rvBookingId").value = bk.id;
+        document.getElementById("rvRoomId").value = bk.roomId;
+        document.getElementById("rvRoomTitle").value = bk.roomTitle || ("Phòng #" + bk.roomId);
+        document.getElementById("rvUserName").value =
+          (currentUser && currentUser.name) ? currentUser.name : (bk.tenantName + " (SV đã xác thực)");
+        document.getElementById("rvComment").value = "";
+        document.getElementById("rvStar5").checked = true;
+        $("#reviewModal").modal("show");
+      };
+
+      document.getElementById("verifiedReviewForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var checkedStar = document.querySelector('input[name="rvRating"]:checked');
+        var payload = {
+          bookingId: document.getElementById("rvBookingId").value,
+          roomId: Number(document.getElementById("rvRoomId").value),
+          userName: document.getElementById("rvUserName").value,
+          rating: checkedStar ? Number(checkedStar.value) : 5,
+          comment: document.getElementById("rvComment").value
+        };
+
+        window.SmartTroAPI.createReview(payload).then(function () {
+          $("#reviewModal").modal("hide");
+          loadBookings();
+          if (window.showToast) {
+            window.showToast("Đã đăng đánh giá thực tế thành công lên trang phòng #" + payload.roomId + "!");
+          }
+        });
+      });
+
+      statusFilterEl.addEventListener("change", renderList);
+      loadBookings();
+    });
+  </script>
+</body>
+
+</html>

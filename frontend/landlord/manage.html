@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Quản Lý Nhà Trọ, Lịch Hẹn & Hồ Sơ eKYC - Trọ Thông Minh</title>
+
+  <!-- Bootstrap 4 core CSS -->
+  <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700|Raleway:400,700&display=swap" rel="stylesheet">
+  <!-- Template styles -->
+  <link href="../css/style.css" rel="stylesheet" />
+  <link href="../css/responsive.css" rel="stylesheet" />
+  <link href="../css/custom.css" rel="stylesheet" />
+</head>
+
+<body class="sub_page">
+  <div class="hero_area">
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="../index.html">
+            <img src="../images/logo-vi.svg" alt="Trọ Thông Minh" class="brand-logo-svg" />
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav justify-content-between align-items-center w-100">
+              <div class="User_option"></div>
+            </ul>
+            <div class="custom_menu-btn">
+              <button type="button" onclick="openNav()" aria-label="Mở menu">
+                <span class="s-1"></span>
+                <span class="s-2"></span>
+                <span class="s-3"></span>
+              </button>
+            </div>
+            <div id="myNav" class="overlay">
+              <div class="overlay-content"></div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+  </div>
+
+  <!-- Nội dung Quản lý cho Chủ trọ -->
+  <section class="layout_padding2">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 10px;">
+        <div class="heading_container">
+          <h2>Bảng Điều Khiển Chủ Trọ</h2>
+        </div>
+        <a href="post-room.html" class="btn btn-warning font-weight-bold">
+          🚀 + Đăng tin phòng trọ mới
+        </a>
+      </div>
+
+      <!-- 4 thẻ chỉ số nhanh -->
+      <div class="row mb-3">
+        <div class="col-lg-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">🟢 ĐANG HIỂN THỊ (ACTIVE)</div>
+            <div class="h3 font-weight-bold text-success mb-0" id="statLandlordActive">0</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">🔒 ĐÃ CHO THUÊ / TẠM ẨN</div>
+            <div class="h3 font-weight-bold text-secondary mb-0" id="statLandlordInactive">0</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">📅 LỊCH HẸN CHỜ DUYỆT</div>
+            <div class="h3 font-weight-bold text-primary mb-0" id="statLandlordPendingBk">0</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6 mb-2">
+          <div class="card border-0 shadow-sm p-3 bg-white h-100">
+            <div class="small text-muted font-weight-bold">🚩 TIN BỊ GẮN CỜ HẬU KIỂM</div>
+            <div class="h3 font-weight-bold text-danger mb-0" id="statLandlordFlagged">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Tab quản lý của Chủ trọ -->
+      <ul class="nav nav-pills mb-3" id="landlordManageTabs" role="tablist">
+        <li class="nav-item mr-2 mb-2">
+          <a class="nav-link active font-weight-bold" id="tab-rooms-btn" data-toggle="pill" href="#tabMyRooms" role="tab">
+            🏠 Danh Sách Phòng Quản Lý
+          </a>
+        </li>
+        <li class="nav-item mr-2 mb-2">
+          <a class="nav-link font-weight-bold" id="tab-bookings-btn" data-toggle="pill" href="#tabLandlordBookings" role="tab">
+            📅 Duyệt Lịch Hẹn Xem Phòng <span class="badge badge-light ml-1" id="badgePendingBk">0</span>
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a class="nav-link font-weight-bold" id="tab-ekyc-submit-btn" data-toggle="pill" href="#tabLandlordEkyc" role="tab">
+            🪪 Xác Thực eKYC Chủ Trọ
+          </a>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- TAB 1: Danh sách phòng đang quản lý -->
+        <div class="tab-pane fade show active" id="tabMyRooms" role="tabpanel">
+          <div id="managedRoomsContainer"></div>
+          <div id="flaggedLandlordRoomsContainer" class="mt-4"></div>
+        </div>
+
+        <!-- TAB 2: Duyệt lịch hẹn xem phòng từ sinh viên -->
+        <div class="tab-pane fade" id="tabLandlordBookings" role="tabpanel">
+          <div id="landlordBookingsContainer"></div>
+        </div>
+
+        <!-- TAB 3: Nộp & Theo dõi hồ sơ xác thực eKYC -->
+        <div class="tab-pane fade" id="tabLandlordEkyc" role="tabpanel">
+          <div class="row">
+            <div class="col-lg-6 mb-4">
+              <div class="card border-0 shadow-sm p-3">
+                <h5 class="font-weight-bold text-primary border-bottom pb-2 mb-3">
+                  🪪 Gửi Hồ Sơ Cấp Tích Xanh "Chủ Trọ Xác Thực"
+                </h5>
+                <form id="ekycSubmitForm">
+                  <div class="form-group">
+                    <label class="small font-weight-bold">Họ và tên trên CCCD *</label>
+                    <input type="text" id="ekycName" class="form-control" placeholder="Nguyễn Thị Hòa" required>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group col-md-6">
+                      <label class="small font-weight-bold">Số CCCD gắn chip (12 số) *</label>
+                      <input type="text" id="ekycCccd" class="form-control" value="048188006688" maxlength="12" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="small font-weight-bold">Số điện thoại chính chủ *</label>
+                      <input type="tel" id="ekycPhone" class="form-control" value="0905123456" required>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="small font-weight-bold">Địa chỉ nhà trọ cho thuê tại Đà Nẵng *</label>
+                    <input type="text" id="ekycAddress" class="form-control" value="112 Nguyễn Lương Bằng, Hòa Khánh Bắc, Liên Chiểu" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="small font-weight-bold">Giấy tờ chứng minh quyền cho thuê *</label>
+                    <select id="ekycDocType" class="form-control">
+                      <option value="Giấy chứng nhận QSDĐ & Đăng ký hộ kinh doanh nhà trọ">Sổ đỏ / QSDĐ & Đăng ký kinh doanh nhà trọ</option>
+                      <option value="Hợp đồng ủy quyền quản lý vận hành hợp pháp">Hợp đồng ủy quyền quản lý vận hành nhà trọ</option>
+                      <option value="">Chưa có giấy tờ bổ sung (Kiểm thử hồ sơ điểm thấp)</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-block font-weight-bold">
+                    📤 Gửi Hồ Sơ Lên Trung Tâm Admin Duyệt
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="card border-0 shadow-sm p-3">
+                <h5 class="font-weight-bold text-primary border-bottom pb-2 mb-3">
+                  📋 Trạng Thái Hồ Sơ eKYC Trên Hệ Thống
+                </h5>
+                <div id="landlordEkycHistoryContainer"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Cập nhật nhanh giá phòng & đơn giá điện nước -->
+  <div class="modal fade" id="editPricingModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="editPricingForm">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title font-weight-bold">✏️ Cập Nhật Giá Thuê & Đơn Giá Dịch Vụ</h5>
+            <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editRoomId">
+            <div class="form-group">
+              <label class="small font-weight-bold">Phòng đang chỉnh sửa</label>
+              <input type="text" id="editRoomTitle" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label class="small font-weight-bold">Giá thuê / tháng (VNĐ) *</label>
+              <input type="number" id="editRoomPrice" class="form-control" step="100000" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="small font-weight-bold">⚡ Điện (đ/kWh) *</label>
+                <input type="number" id="editRoomElec" class="form-control" required>
+              </div>
+              <div class="form-group col-6">
+                <label class="small font-weight-bold">💧 Nước (đ/m³) *</label>
+                <input type="number" id="editRoomWater" class="form-control" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-4 mb-0">
+                <label class="small font-weight-bold">📶 Wifi</label>
+                <input type="number" id="editRoomWifi" class="form-control">
+              </div>
+              <div class="form-group col-4 mb-0">
+                <label class="small font-weight-bold">🗑️ Rác</label>
+                <input type="number" id="editRoomTrash" class="form-control">
+              </div>
+              <div class="form-group col-4 mb-0">
+                <label class="small font-weight-bold">🛵 Gửi xe</label>
+                <input type="number" id="editRoomParking" class="form-control">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-warning font-weight-bold">Lưu thay đổi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <section class="container-fluid footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> Trọ Thông Minh Đà Nẵng - Phân hệ Chủ trọ</p>
+    </div>
+  </section>
+
+  <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="../js/bootstrap.js"></script>
+  <script type="text/javascript" src="../js/api.js"></script>
+  <script type="text/javascript" src="../js/auth.js"></script>
+  <script type="text/javascript" src="../js/custom.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var fmt = window.SmartTroAPI.formatCurrency;
+      var managedCache = [];
+      var currentUser = window.SmartTroAuth.getCurrentUser();
+
+      if (currentUser) {
+        document.getElementById("ekycName").value = currentUser.name || "Cô Nguyễn Thị Hòa";
+        if (currentUser.phone) document.getElementById("ekycPhone").value = currentUser.phone;
+      }
+
+      function loadDashboard() {
+        Promise.all([
+          window.SmartTroAPI.getLandlordRooms(),
+          window.SmartTroAPI.getBookings(),
+          window.SmartTroAPI.getFlaggedData()
+        ]).then(function (res) {
+          var roomData = res[0];
+          var bookings = res[1] || [];
+          var flaggedState = res[2] || {};
+
+          managedCache = roomData.activeAndRented || [];
+          var flaggedList = roomData.flaggedOrRejected || [];
+
+          var activeCount = managedCache.filter(function (r) { return r.status === "ACTIVE"; }).length;
+          var inactiveCount = managedCache.length - activeCount;
+          var pendingBkCount = bookings.filter(function (b) { return b.status === "Chờ xác nhận"; }).length;
+          var pendingFlagCount = flaggedList.filter(function (f) { return f.status === "FLAGGED"; }).length;
+
+          document.getElementById("statLandlordActive").textContent = activeCount;
+          document.getElementById("statLandlordInactive").textContent = inactiveCount;
+          document.getElementById("statLandlordPendingBk").textContent = pendingBkCount;
+          document.getElementById("badgePendingBk").textContent = pendingBkCount;
+          document.getElementById("statLandlordFlagged").textContent = pendingFlagCount;
+
+          renderManagedRooms(managedCache, flaggedList);
+          renderLandlordBookings(bookings);
+          renderEkycHistory(flaggedState.ekycRequests || []);
+        });
+      }
+
+      function renderManagedRooms(rooms, flaggedRooms) {
+        var container = document.getElementById("managedRoomsContainer");
+        if (!rooms.length) {
+          container.innerHTML = '<div class="alert alert-info">Chưa có phòng nào. Hãy nhấn <strong>Đăng tin phòng trọ mới</strong>!</div>';
+        } else {
+          container.innerHTML = rooms.map(function (r) {
+            var sp = r.servicePrices || {};
+            var pillHtml = "";
+            var toggleBtnHtml = "";
+
+            if (r.status === "ACTIVE") {
+              pillHtml = '<span class="status-pill-active">● Đang hiển thị (Còn phòng)</span>';
+              toggleBtnHtml = '<button type="button" class="btn btn-outline-secondary btn-sm btn-block mb-2" onclick="toggleRoomAvailability(\'' + r.id + '\', \'RENTED\')">🔒 Đánh dấu Đã cho thuê</button>';
+            } else if (r.status === "SUSPENDED") {
+              pillHtml = '<span class="status-pill-suspended">🛑 Đang bị Admin tạm đình chỉ</span>';
+              toggleBtnHtml = '<button type="button" class="btn btn-outline-danger btn-sm btn-block mb-2" disabled>Chờ Admin hậu kiểm mở khóa</button>';
+            } else {
+              pillHtml = '<span class="status-pill-rented">🔒 Đã cho thuê (Tạm ẩn khỏi Tìm kiếm)</span>';
+              toggleBtnHtml = '<button type="button" class="btn btn-success btn-sm btn-block font-weight-bold mb-2" onclick="toggleRoomAvailability(\'' + r.id + '\', \'ACTIVE\')">🟢 Mở lại Còn phòng</button>';
+            }
+
+            return (
+              '<div class="card border-0 shadow-sm mb-3 p-3">' +
+              '  <div class="row align-items-center">' +
+              '    <div class="col-md-3 mb-2 mb-md-0">' +
+              '      <img src="' + window.SmartTroAPI.resolveAsset(r.image) + '" class="w-100 rounded" style="height:135px;object-fit:cover;" alt="' + r.title + '">' +
+              '    </div>' +
+              '    <div class="col-md-6">' +
+              '      <div class="d-flex justify-content-between align-items-center flex-wrap mb-1" style="gap:6px;">' +
+              '        <span class="small font-weight-bold text-muted">Mã phòng: #' + r.id + ' • ' + r.type + '</span>' +
+              pillHtml +
+              '      </div>' +
+              '      <h5 class="font-weight-bold text-primary mb-1">' +
+              '        <a href="../room-detail.html?id=' + r.id + '" class="text-primary">' + r.title + ' ↗</a>' +
+              '      </h5>' +
+              '      <div class="small text-muted mb-2">📍 ' + r.address + ' (Cách ' + r.refUniName + ' ' + r.distanceKm + ' km)</div>' +
+              '      <div>' +
+              '        <span class="metric-pill price-pill mr-1">💰 ' + fmt(r.price) + '/tháng</span>' +
+              '        <span class="metric-pill mr-1">⚡ Điện: ' + fmt(sp.electricity) + '</span>' +
+              '        <span class="metric-pill">💧 Nước: ' + fmt(sp.water) + '</span>' +
+              '      </div>' +
+              '    </div>' +
+              '    <div class="col-md-3 mt-3 mt-md-0">' +
+              toggleBtnHtml +
+              '      <button type="button" class="btn btn-outline-primary btn-sm btn-block font-weight-bold" onclick="openPricingModal(\'' + r.id + '\')">✏️ Sửa giá & Điện nước</button>' +
+              '    </div>' +
+              '  </div>' +
+              '</div>'
+            );
+          }).join("");
+        }
+
+        var flagContainer = document.getElementById("flaggedLandlordRoomsContainer");
+        if (!flaggedRooms.length) {
+          flagContainer.innerHTML = "";
+        } else {
+          flagContainer.innerHTML =
+            '<h6 class="font-weight-bold text-danger mb-2">🚩 Tin đăng đang bị chặn chờ Admin hậu kiểm (' + flaggedRooms.length + ')</h6>' +
+            flaggedRooms.map(function (f) {
+              return (
+                '<div class="card border-danger mb-2 p-3 bg-white">' +
+                '  <div class="d-flex justify-content-between align-items-center flex-wrap">' +
+                '    <div>' +
+                '      <strong>#' + f.id + ' - ' + f.title + '</strong> ' +
+                '      <span class="badge ' + (f.status === "REJECTED" ? "badge-secondary" : "badge-danger") + ' ml-1">' +
+                         (f.status === "REJECTED" ? "Đã bị từ chối" : "Chờ Admin hậu kiểm (Trust Score: " + f.trustScore + "/100)") +
+                '      </span>' +
+                '      <div class="small text-danger mt-1">Lý do: ' + (f.reasons || []).join("; ") + '</div>' +
+                '    </div>' +
+                '    <a href="post-room.html" class="btn btn-sm btn-outline-primary mt-2 mt-md-0">Đăng lại tin chuẩn</a>' +
+                '  </div>' +
+                '</div>'
+              );
+            }).join("");
+        }
+      }
+
+      function renderLandlordBookings(bookings) {
+        var container = document.getElementById("landlordBookingsContainer");
+        if (!bookings.length) {
+          container.innerHTML = '<div class="alert alert-info">Chưa có lịch hẹn xem phòng nào.</div>';
+          return;
+        }
+
+        container.innerHTML = bookings.map(function (bk) {
+          var badgeHtml = "";
+          var btnHtml = "";
+
+          if (bk.status === "Chờ xác nhận") {
+            badgeHtml = '<span class="badge badge-warning text-dark p-2">⏳ Mới đặt - Chờ xác nhận</span>';
+            btnHtml =
+              '<button type="button" class="btn btn-primary btn-sm btn-block font-weight-bold mb-2" onclick="changeBookingStatus(\'' + bk.id + '\', \'Đã xác nhận\')">✓ Xác nhận lịch hẹn</button>' +
+              '<button type="button" class="btn btn-outline-danger btn-sm btn-block" onclick="changeBookingStatus(\'' + bk.id + '\', \'Đã hủy\')">✕ Báo bận / Từ chối</button>';
+          } else if (bk.status === "Đã xác nhận") {
+            badgeHtml = '<span class="badge badge-primary p-2">✓ Đã hẹn lịch xem</span>';
+            btnHtml =
+              '<button type="button" class="btn btn-success btn-sm btn-block font-weight-bold mb-2" onclick="changeBookingStatus(\'' + bk.id + '\', \'Đã hoàn thành\')">🏁 Xác nhận SV đã xem phòng</button>' +
+              '<button type="button" class="btn btn-outline-secondary btn-sm btn-block" onclick="changeBookingStatus(\'' + bk.id + '\', \'Đã hủy\')">Hủy hẹn</button>';
+          } else if (bk.status === "Đã hoàn thành") {
+            badgeHtml = '<span class="badge badge-success p-2">🏁 Hoàn thành (Đã mở quyền đánh giá SV)</span>';
+            btnHtml =
+              '<a href="../room-detail.html?id=' + bk.roomId + '" class="btn btn-outline-success btn-sm btn-block">Xem đánh giá của phòng →</a>';
+          } else {
+            badgeHtml = '<span class="badge badge-secondary p-2">✕ Đã hủy</span>';
+            btnHtml =
+              '<button type="button" class="btn btn-outline-secondary btn-sm btn-block" onclick="changeBookingStatus(\'' + bk.id + '\', \'Chờ xác nhận\')">Khôi phục chờ duyệt</button>';
+          }
+
+          return (
+            '<div class="card border-0 shadow-sm mb-3 p-3">' +
+            '  <div class="row align-items-center">' +
+            '    <div class="col-md-8">' +
+            '      <div class="d-flex justify-content-between align-items-center flex-wrap mb-1">' +
+            '        <span class="small font-weight-bold text-muted">Mã hẹn: #' + bk.id + '</span>' +
+            badgeHtml +
+            '      </div>' +
+            '      <h5 class="font-weight-bold text-primary mb-1">🏠 ' + (bk.roomTitle || ("Phòng #" + bk.roomId)) + '</h5>' +
+            '      <div class="mb-1">' +
+            '        <span class="metric-pill price-pill mr-1">🕒 ' + bk.time + ' - Ngày ' + bk.date + '</span>' +
+            '        <span class="metric-pill">🎓 Khách hẹn: ' + bk.tenantName + ' (📞 ' + bk.phone + ')</span>' +
+            '      </div>' +
+            (bk.note ? '<div class="small text-muted mt-1">📝 Lời nhắn: "' + bk.note + '"</div>' : '') +
+            '    </div>' +
+            '    <div class="col-md-4 mt-3 mt-md-0">' +
+            btnHtml +
+            '    </div>' +
+            '  </div>' +
+            '</div>'
+          );
+        }).join("");
+      }
+
+      function renderEkycHistory(list) {
+        var container = document.getElementById("landlordEkycHistoryContainer");
+        if (!list.length) {
+          container.innerHTML = '<div class="text-muted small">Chưa có hồ sơ eKYC nào.</div>';
+          return;
+        }
+        container.innerHTML = list.map(function (req) {
+          var badge =
+            req.status === "APPROVED"
+              ? '<span class="badge badge-success p-1">✓ Đã duyệt tích xanh</span>'
+              : req.status === "REJECTED"
+              ? '<span class="badge badge-danger p-1">✕ Bị từ chối</span>'
+              : '<span class="badge badge-warning text-dark p-1">⏳ Chờ Admin duyệt</span>';
+
+          return (
+            '<div class="border rounded p-2 mb-2 bg-light">' +
+            '  <div class="d-flex justify-content-between align-items-center">' +
+            '    <strong class="small text-primary">#' + req.id + ' - ' + req.landlordName + '</strong>' +
+            badge +
+            '  </div>' +
+            '  <div class="small text-muted">CCCD: ' + req.cccdNumber + ' • Face Match: <strong>' + req.faceMatchScore + '%</strong></div>' +
+            '  <div class="small text-dark">' + req.propertyDoc + '</div>' +
+            '</div>'
+          );
+        }).join("");
+      }
+
+      window.toggleRoomAvailability = function (roomId, nextStatus) {
+        window.SmartTroAPI.updateRoomStatus(roomId, nextStatus).then(function () {
+          loadDashboard();
+          if (window.showToast) {
+            window.showToast(
+              nextStatus === "ACTIVE"
+                ? "Phòng #" + roomId + " đã hiển thị trở lại trên bản đồ tìm kiếm!"
+                : "Đã ẩn phòng #" + roomId + " sang trạng thái Đã cho thuê."
+            );
+          }
+        });
+      };
+
+      window.openPricingModal = function (roomId) {
+        var r = managedCache.find(function (x) { return String(x.id) === String(roomId); });
+        if (!r) return;
+        var sp = r.servicePrices || {};
+        document.getElementById("editRoomId").value = r.id;
+        document.getElementById("editRoomTitle").value = r.title;
+        document.getElementById("editRoomPrice").value = r.price;
+        document.getElementById("editRoomElec").value = sp.electricity || 3500;
+        document.getElementById("editRoomWater").value = sp.water || 15000;
+        document.getElementById("editRoomWifi").value = sp.wifi || 0;
+        document.getElementById("editRoomTrash").value = sp.trash || 20000;
+        document.getElementById("editRoomParking").value = sp.parking || 0;
+        $("#editPricingModal").modal("show");
+      };
+
+      document.getElementById("editPricingForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var rId = document.getElementById("editRoomId").value;
+        window.SmartTroAPI.updateRoomPricing(rId, {
+          price: document.getElementById("editRoomPrice").value,
+          electricity: document.getElementById("editRoomElec").value,
+          water: document.getElementById("editRoomWater").value,
+          wifi: document.getElementById("editRoomWifi").value,
+          trash: document.getElementById("editRoomTrash").value,
+          parking: document.getElementById("editRoomParking").value
+        }).then(function () {
+          $("#editPricingModal").modal("hide");
+          loadDashboard();
+          if (window.showToast) {
+            window.showToast("Đã cập nhật bảng giá mới cho phòng #" + rId + "!");
+          }
+        });
+      });
+
+      window.changeBookingStatus = function (bookingId, newStatus) {
+        window.SmartTroAPI.updateBookingStatus(bookingId, newStatus).then(function () {
+          loadDashboard();
+          if (window.showToast) {
+            window.showToast("Lịch hẹn #" + bookingId + " -> " + newStatus);
+          }
+        });
+      };
+
+      document.getElementById("ekycSubmitForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        window.SmartTroAPI.submitEkycRequest({
+          landlordName: document.getElementById("ekycName").value,
+          cccdNumber: document.getElementById("ekycCccd").value,
+          phone: document.getElementById("ekycPhone").value,
+          address: document.getElementById("ekycAddress").value,
+          propertyDoc: document.getElementById("ekycDocType").value
+        }).then(function (created) {
+          loadDashboard();
+          if (window.showToast) {
+            window.showToast("Đã gửi hồ sơ #" + created.id + " sang trang Admin hậu kiểm!");
+          }
+        });
+      });
+
+      loadDashboard();
+    });
+  </script>
+</body>
+
+</html>

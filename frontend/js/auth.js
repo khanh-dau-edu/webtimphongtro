@@ -1,6 +1,6 @@
 /**
  * js/auth.js
- * Quản lý đăng nhập/đăng ký giả lập bằng sessionStorage và cập nhật menu theo vai trò.
+ * Quản lý đăng nhập/đăng ký, phân quyền Route Guard và cập nhật menu theo vai trò.
  * Các vai trò: 'tenant' (Khách thuê), 'landlord' (Chủ trọ), 'admin' (Quản trị viên).
  */
 (function (window) {
@@ -14,7 +14,6 @@
     admin: "Admin"
   };
 
-  // Lấy thông tin người dùng hiện tại từ sessionStorage
   function getCurrentUser() {
     try {
       var raw = sessionStorage.getItem(SESSION_KEY);
@@ -24,60 +23,121 @@
     }
   }
 
-  // Trả về trang đích mặc định theo vai trò (trong Đợt 1)
-  function getRedirectUrlByRole(role) {
+  // Trang đích mặc định sau khi đăng nhập theo vai trò
+  function getRedirectUrlByRole(role, nextRelUrl) {
     var base = window.SmartTroAPI ? window.SmartTroAPI.getBasePath() : "";
-    if (role === "landlord") return base + "landlord/post-room.html";
+    if (nextRelUrl && nextRelUrl.indexOf("http") !== 0) {
+      return base + nextRelUrl.replace(/^(\.\.\/)+/, "").replace(/^\//, "");
+    }
+    if (role === "landlord") return base + "landlord/manage.html";
     if (role === "admin") return base + "admin/review.html";
-    return base + "search.html";
+    return base + "tenant/my-bookings.html";
   }
 
-  // Đăng nhập giả lập & lưu vai trò vào sessionStorage
-  function login(email, password, role, customName) {
+  // Đăng nhập & lưu vai trò vào sessionStorage
+  function login(email, password, role, customName, nextRelUrl) {
     var chosenRole = role || "tenant";
     var defaultNames = {
       tenant: "Minh Quân (SV Bách Khoa)",
       landlord: "Cô Nguyễn Thị Hòa",
       admin: "Quản trị viên Hệ thống"
     };
+    var defaultPhones = {
+      tenant: "0905111222",
+      landlord: "0905123456",
+      admin: "02363888999"
+    };
     var user = {
-      email: email || chosenRole + "@smarttro.vn",
+      email: email || chosenRole + "@trothongminh.vn",
       name: customName || defaultNames[chosenRole] || "Người dùng",
+      phone: defaultPhones[chosenRole] || "0905000111",
       role: chosenRole,
       loggedInAt: new Date().toISOString()
     };
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
     return {
       user: user,
-      redirectUrl: getRedirectUrlByRole(chosenRole)
+      redirectUrl: getRedirectUrlByRole(chosenRole, nextRelUrl)
     };
   }
 
   // Đăng ký tài khoản Khách thuê hoặc Chủ trọ
-  function register(formData) {
+  function register(formData, nextRelUrl) {
     var chosenRole = formData.role === "landlord" ? "landlord" : "tenant";
     var user = {
       name: formData.name || "Thành viên mới",
       phone: formData.phone || "0905000111",
-      email: formData.email || "user@smarttro.vn",
+      email: formData.email || "user@trothongminh.vn",
       role: chosenRole,
       loggedInAt: new Date().toISOString()
     };
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
     return {
       user: user,
-      redirectUrl: getRedirectUrlByRole(chosenRole)
+      redirectUrl: getRedirectUrlByRole(chosenRole, nextRelUrl)
     };
   }
 
-  // Đăng xuất
   function logout() {
     sessionStorage.removeItem(SESSION_KEY);
     var base = window.SmartTroAPI ? window.SmartTroAPI.getBasePath() : "";
     window.location.href = base + "index.html";
   }
 
-  // Lấy danh sách mục menu theo vai trò hiện tại
+  // Bảo vệ đường dẫn theo vai trò (Route Guard) cho các phân hệ /admin/, /landlord/, /tenant/
+  function enforceRouteGuard() {
+    var path = window.location.pathname.replace(/\\/g, "/");
+    var search = window.location.search || "";
+    var base = window.SmartTroAPI ? window.SmartTroAPI.getBasePath() : "";
+    var user = getCurrentUser();
+
+    var requiredRole = null;
+    var relTarget = "";
+
+    if (path.indexOf("/admin/") !== -1) {
+      requiredRole = "admin";
+      relTarget = "admin/" + path.split("/admin/")[1] + search;
+      if (!user || user.role !== "admin") {
+        window.location.replace(
+          base +
+            "login.html?required=" +
+            requiredRole +
+            "&next=" +
+            encodeURIComponent(relTarget)
+        );
+        return false;
+      }
+    } else if (path.indexOf("/landlord/") !== -1) {
+      requiredRole = "landlord";
+      relTarget = "landlord/" + path.split("/landlord/")[1] + search;
+      if (!user || (user.role !== "landlord" && user.role !== "admin")) {
+        window.location.replace(
+          base +
+            "login.html?required=" +
+            requiredRole +
+            "&next=" +
+            encodeURIComponent(relTarget)
+        );
+        return false;
+      }
+    } else if (path.indexOf("/tenant/") !== -1) {
+      requiredRole = "tenant";
+      relTarget = "tenant/" + path.split("/tenant/")[1] + search;
+      if (!user || (user.role !== "tenant" && user.role !== "admin")) {
+        window.location.replace(
+          base +
+            "login.html?required=" +
+            requiredRole +
+            "&next=" +
+            encodeURIComponent(relTarget)
+        );
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Lấy danh sách mục menu theo đúng vai trò hiện tại
   function getMenuItems(role, basePath, compareCount) {
     var items = [
       { label: "Trang chủ", href: basePath + "index.html", key: "index.html" },
@@ -90,9 +150,20 @@
       }
     ];
 
-    if (role === "landlord") {
+    if (role === "tenant") {
       items.push({
-        label: "Đăng tin phòng",
+        label: "Lịch hẹn & Đánh giá",
+        href: basePath + "tenant/my-bookings.html",
+        key: "my-bookings.html"
+      });
+    } else if (role === "landlord") {
+      items.push({
+        label: "Quản lý trọ",
+        href: basePath + "landlord/manage.html",
+        key: "manage.html"
+      });
+      items.push({
+        label: "Đăng tin mới",
         href: basePath + "landlord/post-room.html",
         key: "post-room.html"
       });
@@ -103,27 +174,31 @@
         key: "review.html"
       });
       items.push({
-        label: "Đăng tin (Test)",
-        href: basePath + "landlord/post-room.html",
-        key: "post-room.html"
+        label: "Quản lý trọ",
+        href: basePath + "landlord/manage.html",
+        key: "manage.html"
+      });
+      items.push({
+        label: "Lịch hẹn SV",
+        href: basePath + "tenant/my-bookings.html",
+        key: "my-bookings.html"
       });
     } else {
-      // Khách hoặc Khách thuê vẫn có lối tắt nhanh để kiểm thử toàn bộ luồng Đợt 1
+      // Khách chưa đăng nhập: nhấn vào sẽ qua Route Guard tới trang Đăng nhập kèm điều hướng tự động
       items.push({
-        label: "Đăng tin",
-        href: basePath + "landlord/post-room.html",
-        key: "post-room.html"
+        label: "Lịch hẹn",
+        href: basePath + "tenant/my-bookings.html",
+        key: "my-bookings.html"
       });
       items.push({
-        label: "Hậu kiểm",
-        href: basePath + "admin/review.html",
-        key: "review.html"
+        label: "Cho thuê trọ",
+        href: basePath + "landlord/manage.html",
+        key: "manage.html"
       });
     }
     return items;
   }
 
-  // Cập nhật số lượng phòng đã lưu so sánh trên thanh menu
   function updateCompareBadge() {
     var count = window.SmartTroAPI ? window.SmartTroAPI.getCompareIds().length : 0;
     var badges = document.querySelectorAll(".compare-count-badge");
@@ -132,7 +207,6 @@
     });
   }
 
-  // Đồng bộ Header, Menu ngang, Menu overlay (#myNav) theo đúng vai trò trong sessionStorage
   function syncHeaderAndMenu() {
     var base = window.SmartTroAPI ? window.SmartTroAPI.getBasePath() : "";
     var user = getCurrentUser();
@@ -144,13 +218,16 @@
     var currentPath = window.location.pathname.replace(/\\/g, "/");
     var menuItems = getMenuItems(role, base, compareCount);
 
-    // 1. Render menu ngang trên Desktop
-    var navList = document.querySelector(". header_section .navbar-nav, .header_section .navbar-nav");
+    var navList = document.querySelector(
+      ".header_section .navbar-nav"
+    );
     if (navList) {
       var desktopLinksHtml = '<ul class="desktop-nav-links">';
       menuItems.forEach(function (item) {
-        var isActive = currentPath.indexOf(item.key) !== -1 ||
-          (item.key === "index.html" && (currentPath.endsWith("/") || currentPath.endsWith("/frontend")));
+        var isActive =
+          currentPath.indexOf(item.key) !== -1 ||
+          (item.key === "index.html" &&
+            (currentPath.endsWith("/") || currentPath.endsWith("/frontend")));
         var badgeHtml =
           item.badge !== undefined
             ? '<span class="compare-count-badge">' + item.badge + "</span>"
@@ -196,7 +273,6 @@
       navList.innerHTML = desktopLinksHtml + userOptionHtml;
     }
 
-    // 2. Render menu Overlay (#myNav) của template cho Mobile & Tablet
     var overlayContent = document.querySelector("#myNav .overlay-content");
     if (overlayContent) {
       var overlayHtml = "";
@@ -222,15 +298,21 @@
     }
   }
 
+  // Thực thi Route Guard ngay lập tức trước khi trang render xong nội dung nhạy cảm
+  enforceRouteGuard();
+
   document.addEventListener("DOMContentLoaded", function () {
     syncHeaderAndMenu();
   });
 
   window.SmartTroAuth = {
+    ROLE_LABELS: ROLE_LABELS,
     getCurrentUser: getCurrentUser,
+    getRedirectUrlByRole: getRedirectUrlByRole,
     login: login,
     register: register,
     logout: logout,
+    enforceRouteGuard: enforceRouteGuard,
     syncHeaderAndMenu: syncHeaderAndMenu,
     updateCompareBadge: updateCompareBadge
   };

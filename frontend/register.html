@@ -127,13 +127,15 @@
         e.preventDefault();
         var selectedRoleEl = document.querySelector('input[name="regRole"]:checked');
         var role = selectedRoleEl ? selectedRoleEl.value : "tenant";
+        var params = new URLSearchParams(window.location.search);
+        var nextUrl = params.get("next");
 
         var res = window.SmartTroAuth.register({
           name: document.getElementById("regName").value,
           phone: document.getElementById("regPhone").value,
           email: document.getElementById("regEmail").value,
           role: role
-        });
+        }, nextUrl);
         window.location.href = res.redirectUrl;
       });
     });

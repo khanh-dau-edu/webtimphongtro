@@ -136,5 +136,29 @@
       "propertyDoc": "Chưa cung cấp giấy tờ nhà trọ",
       "status": "PENDING"
     }
+  ],
+  "violationReports": [
+    {
+      "id": "RP-101",
+      "roomId": 5,
+      "roomTitle": "Phòng Trọ Giá Rẻ Châu Thị Vĩnh Tế",
+      "reporterName": "Quốc Đạt (SV ĐH Kinh Tế)",
+      "reporterPhone": "0905123888",
+      "reason": "Đơn giá điện/nước thực tế cao hơn tin đăng",
+      "detail": "Khi đến xem trực tiếp chủ trọ báo giá điện 5.000đ/kWh và yêu cầu đóng cọc giữ chỗ trước 1 triệu.",
+      "createdAt": "2026-11-21 14:20",
+      "status": "PENDING"
+    },
+    {
+      "id": "RP-102",
+      "roomId": 11,
+      "roomTitle": "Căn Hộ Mini Gần ĐH Việt Hàn",
+      "reporterName": "Minh Thư (SV ĐH Việt Hàn VKU)",
+      "reporterPhone": "0935666777",
+      "reason": "Ảnh không đúng thực tế",
+      "detail": "Phòng thực tế nhỏ hơn ảnh chụp góc rộng, khu để xe thu thêm phí 50.000đ/tháng.",
+      "createdAt": "2026-11-22 09:15",
+      "status": "PENDING"
+    }
   ]
 }

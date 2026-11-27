@@ -731,6 +731,73 @@
   display: none;
 }
 
+/* --- Phân hệ Khách thuê & Quản lý Chủ trọ (Đợt 2) --- */
+.status-pill-active {
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.status-pill-rented {
+  background: #e0e7ff;
+  color: #1e40af;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.status-pill-suspended {
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.star-rating-picker {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 6px;
+}
+
+.star-rating-picker input {
+  display: none;
+}
+
+.star-rating-picker label {
+  font-size: 28px;
+  color: #d1d5db;
+  cursor: pointer;
+  margin: 0;
+  transition: color 0.15s;
+}
+
+.star-rating-picker input:checked ~ label,
+.star-rating-picker label:hover,
+.star-rating-picker label:hover ~ label {
+  color: #f9bc16;
+}
+
+.upload-preview-box {
+  border: 2px dashed #93c5fd;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.upload-preview-box img {
+  max-height: 150px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-top: 8px;
+}
+
 /* --- Responsive Mobile-First (360px, 768px, 1200px) --- */
 @media (max-width: 991px) {
   .desktop-nav-links {
